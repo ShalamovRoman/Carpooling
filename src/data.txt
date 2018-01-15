@@ -1,0 +1,7 @@
+SaintPetersburg Chelyabinsk 3
+SaintPetersburg Moscow 3
+Moscow Chelyabinsk 4
+Chelyabinsk Yaroslavl 2
+Kazan Yaroslavl 2
+Kazan Yaroslavl 2
+Kazan Ekaterinburg 2
