@@ -28,6 +28,7 @@ public class TravellerAgent extends Agent {
 	private double dist2;
 	private double price;
 	private double procent = 0.65;
+	private HashSet<AID> driversToWait = new HashSet<>();
 
 
 	protected void setup() {
@@ -67,7 +68,7 @@ public class TravellerAgent extends Agent {
 		}
 	}
 
-	public class StartCycle extends OneShotBehaviour {
+	private class StartCycle extends OneShotBehaviour {
 		private Agent agent;
 		private LifeCycle cycle;
 
@@ -93,10 +94,11 @@ public class TravellerAgent extends Agent {
 			} catch (FIPAException fe) {
 				fe.printStackTrace();
 			}
-			SequentialBehaviour sb = new SequentialBehaviour(agent);
-			sb.addSubBehaviour(new SendData(agent));
-			sb.addSubBehaviour(new ProcessMessage(agent));
-			addBehaviour(sb);
+			driversToWait = drivers;
+			ParallelBehaviour pb = new ParallelBehaviour();
+			pb.addSubBehaviour(new SendData(agent));
+			pb.addSubBehaviour(new ProcessMessage(agent));
+			addBehaviour(pb);
 				cnt++;
 			}
 		}
@@ -119,18 +121,20 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
-		String replyWith = String.valueOf(System.currentTimeMillis());
+	//	String replyWith = String.valueOf(System.currentTimeMillis());
 		ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			msg.removeReceiver(getAID());
 			msg.setContent(from + " " + to + " " + dist);
-			msg.setConversationId("Tachki");
-			msg.setReplyWith(replyWith);
+			msg.setConversationId("SendContent");
+		//	msg.setReplyWith(replyWith);
 			for (AID dr : drivers) {
 			msg.addReceiver(dr);
-		}
-			agent.send(msg);
+			System.out.println(agent.getAID().getLocalName() + " sends " + msg.getContent() + " to " + dr.getLocalName());
+				agent.send(msg);
+			}
+
 	}}
-	private class GetPossiblePass extends OneShotBehaviour {
+	private class GetPossiblePass extends CyclicBehaviour {
 		private ReceiverBehaviour.Handle handle;
 		private Agent agent;
 
@@ -142,78 +146,75 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
-			try {
-				ACLMessage msg = handle.getMessage();
-				if (msg.getConversationId() == "Tachki" && msg.getContent() != null) {
-					String[] content = msg.getContent().split(" ");
-					if ((way.contains(content[0])) && (way.contains(content[1]))) {
-						if (way.indexOf(content[0]) < way.indexOf(content[1])) {
-							way2 = way;
-							System.out.println(content + ".1");
-							CountUtility(agent, content, msg.getSender());
-						}
-					} else if ((way.contains(content[0])) && (!way.contains(content[1]))) {
-						if (way.size() == 2) {
-							dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
-							way2.add(from);
-							way2.add(content[1]);
-							way2.add(to);
-							System.out.println(content + ".2");
-							CountUtility(agent, content, msg.getSender());
-						} else {
-							dist2 = dist + SetUp.graphMatrix.getPath(to, content[1]).getWeight();
-							way2 = way.subList(0, way.size() - 2);
-							way2.add(content[1]);
-							way2.add(way.get(way.size() - 1));// +- пара индексов
-							System.out.println(content + ".3");
-							CountUtility(agent, content, msg.getSender());
-						}
-					} else if (!(way.contains(content[0])) && (way.contains(content[1]))) {
-						if (way.size() == 2) {
-							dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
-							way2.add(from);
-							way2.add(content[0]);
-							way2.add(to);
-							System.out.println(content + ".4");
-							CountUtility(agent, content, msg.getSender());
-						} else {
-							double sum = 0;
-							for (int i = 1; i < way.size() - 1; i++) {
-								sum += SetUp.graphMatrix.getPath(way.get(i), way.get(i + 1)).getWeight();
-							}
-							dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + sum;
-							way2.add(way.get(0));
-							way2.add(content[0]);
-							way2.addAll(way.subList(1, way.size() - 1));
-							System.out.println(content + ".5");
-							CountUtility(agent, content, msg.getSender());
-						}
-					} else {
-						if (way.size() == 2) {
-							dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
-							way2.add(from);
-							way2.add(content[0]);
-							way2.add(content[1]);
-							way2.add(to);
-							System.out.println(content + ".6");
-							CountUtility(agent, content, msg.getSender());
-						} else {
-							double sum = 0;
-							for (int i = 1; i < way2.size() - 1; i++) {
-								sum += SetUp.graphMatrix.getPath(way2.get(i), way2.get(i + 1)).getWeight();
-							}
 
-							dist2 = sum;//SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + sum + SetUp.graphMatrix.getPath(content[1], to).getWeight();
-							way2.add(way.get(0));
-							way2.add(content[0]);
-							way2.addAll(way.subList(1, way.size() - 2));
-							way2.add(content[1]);
-							way2.add(way.get(way.size() - 1));
-							System.out.println(content + ".7");
-							CountUtility(agent, content, msg.getSender());
+			if (driversToWait.size() > 0) {
+				 try {
+					ACLMessage msg = handle.getMessage();
+					if (msg.getConversationId() == "SendContent" && msg.getContent() != null && driversToWait.contains(msg.getSender())) {
+						System.out.println(agent.getAID().getLocalName() + " got " + msg.getContent() + " from " + msg.getSender().getLocalName());
+						driversToWait.remove(msg.getSender());
+						String[] content = msg.getContent().split(" ");
+						if ((way.contains(content[0])) && (way.contains(content[1]))) {
+							if (way.indexOf(content[0]) < way.indexOf(content[1])) {
+								way2 = way;
+								CountUtility(agent, content, msg.getSender());
+							}
+						} else if ((way.contains(content[0])) && (!way.contains(content[1]))) {
+							if (way.size() == 2) {
+								dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
+								way2.add(from);
+								way2.add(content[1]);
+								way2.add(to);
+								CountUtility(agent, content, msg.getSender());
+							} else {
+								dist2 = dist + SetUp.graphMatrix.getPath(to, content[1]).getWeight();
+								way2 = way.subList(0, way.size() - 2);
+								way2.add(content[1]);
+								way2.add(way.get(way.size() - 1));// +- пара индексов
+								CountUtility(agent, content, msg.getSender());
+							}
+						} else if (!(way.contains(content[0])) && (way.contains(content[1]))) {
+							if (way.size() == 2) {
+								dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
+								way2.add(from);
+								way2.add(content[0]);
+								way2.add(to);
+								CountUtility(agent, content, msg.getSender());
+							} else {
+								double sum = 0;
+								for (int i = 1; i < way.size() - 1; i++) {
+									sum += SetUp.graphMatrix.getPath(way.get(i), way.get(i + 1)).getWeight();
+								}
+								dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + sum;
+								way2.add(way.get(0));
+								way2.add(content[0]);
+								way2.addAll(way.subList(1, way.size() - 1));
+								CountUtility(agent, content, msg.getSender());
+							}
+						} else {
+							if (way.size() == 2) {
+								dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
+								way2.add(from);
+								way2.add(content[0]);
+								way2.add(content[1]);
+								way2.add(to);
+								CountUtility(agent, content, msg.getSender());
+							} else {
+								double sum = 0;
+								for (int i = 1; i < way2.size() - 1; i++) {
+									sum += SetUp.graphMatrix.getPath(way2.get(i), way2.get(i + 1)).getWeight();
+								}
+
+								dist2 = sum;//SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + sum + SetUp.graphMatrix.getPath(content[1], to).getWeight();
+								way2.add(way.get(0));
+								way2.add(content[0]);
+								way2.addAll(way.subList(1, way.size() - 2));
+								way2.add(content[1]);
+								way2.add(way.get(way.size() - 1));
+								CountUtility(agent, content, msg.getSender());
+							}
 						}
 					}
-				}
 /*					double commonDist = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
 					if (commonDist < dist + Double.parseDouble((content[2]))) {
 						if (utility < dist + Double.parseDouble(content[2]) - commonDist) {
@@ -228,14 +229,16 @@ public class TravellerAgent extends Agent {
 						System.out.println(agent.getLocalName() + ": refuse agree from " + msg.getSender().getLocalName());
 					}*/
 
-			} catch (ReceiverBehaviour.TimedOut timedOut) {
-				//System.out.println(agent.getLocalName() + ": time out while receiving message");
-			} catch (ReceiverBehaviour.NotYetReady notYetReady) {
-				//System.out.println(agent.getLocalName() + ": message not yet ready");
-				//notYetReady.printStackTrace();
+				} catch (ReceiverBehaviour.TimedOut timedOut) {
+					//System.out.println(agent.getLocalName() + ": time out while receiving message");
+				} catch (ReceiverBehaviour.NotYetReady notYetReady) {
+					//System.out.println(agent.getLocalName() + ": message not yet ready");
+					//notYetReady.printStackTrace();
+				}
+				//count--;
 			}
 
-			}
+		}
 	}
 	private class SendMsgToPass extends OneShotBehaviour {
 		private ReceiverBehaviour.Handle handle;
@@ -317,13 +320,13 @@ public class TravellerAgent extends Agent {
 				System.out.println(agent.getLocalName() + ": goes with  " + possibleDriver.getLocalName()
 						+ "; with economy " + utility + " driver is "+ driver.getLocalName());
 
-				ACLMessage refuseMsg = new ACLMessage(ACLMessage.REFUSE);
+				/*CLMessage refuseMsg = new ACLMessage(ACLMessage.REFUSE);
 				refuseMsg.setConversationId("Disagree");
 				for (AID dr : drivers) {
 					if (dr.getLocalName() != possibleDriver.getLocalName()) refuseMsg.addReceiver(dr);
 					System.out.println(agent.getLocalName() + ": refuse agree from " + dr.getLocalName());
 				}
-				agent.send(refuseMsg);
+				agent.send(refuseMsg);*/
 				/*
 				try {
 					DFService.deregister(agent);
@@ -345,7 +348,7 @@ public class TravellerAgent extends Agent {
 				public void action() {
 					SequentialBehaviour sb = new SequentialBehaviour(agent);
 					final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
-					sb.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.MatchConversationId("Tachki")));
+					sb.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.MatchConversationId("SendContent")));
 					sb.addSubBehaviour(new GetPossiblePass(agent, handle));
 					sb.addSubBehaviour(new SendMsgToPass(agent, handle));
 					addBehaviour(sb);
@@ -382,11 +385,11 @@ public class TravellerAgent extends Agent {
 						}
 						price = procent * (sum - utility);
 						possiblePass = sender;
-					}
+					}//utility = 0
 				}
 				if (possiblePass != null) {
 					ACLMessage msg = new ACLMessage(ACLMessage.CFP);
-					msg.setConversationId("Agree");
+					msg.setConversationId("SendPrice");
 					msg.setContent(price + "");
 					msg.addReceiver(possiblePass);
 					agent.send(msg);
