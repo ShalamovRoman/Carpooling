@@ -5,14 +5,21 @@ import jade.wrapper.PlatformController;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import java.util.*;
+import java.util.concurrent.CyclicBarrier;
+
 import jade.core.*;
 
 public class SetUp extends Agent {
 	private static SimpleWeightedGraph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
-	public static FloydWarshallShortestPaths graphMatrix;
+//	public static FloydWarshallShortestPaths graphMatrix;
+	public static DijkstraShortestPath graphMatrix;
+
+	public static CyclicBarrier b;
 	public static Map<String, String> categories = new HashMap<String, String>();
 	protected void setup() {
+
 		graph.addVertex("A");
 		graph.addVertex("B");
 		graph.addVertex("C");
@@ -31,7 +38,8 @@ public class SetUp extends Agent {
 		graph.setEdgeWeight(graph.addEdge("C", "D"), 100);
 		graph.setEdgeWeight(graph.addEdge("F", "E"), 100);
 		PlatformController controller = getContainerController();
-		graphMatrix = new FloydWarshallShortestPaths(graph);
+		//graphMatrix = new FloydWarshallShortestPaths(graph);
+		graphMatrix = new DijkstraShortestPath(graph);
 		String line = "A F 4\n" +
 				"D E 4\n" +
 				"A E 4\n" +
@@ -39,6 +47,7 @@ public class SetUp extends Agent {
 				"E D 4\n" +
 				"A G 4\n";
 		String[] data = line.split("\n");
+		b = new CyclicBarrier(data.length );
 		for (int i = 0; i < data.length; i++) {
 			try {
 				String[] info = data[i].split(" ");
