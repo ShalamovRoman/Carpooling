@@ -22,21 +22,24 @@ public class TravellerAgent extends Agent {
 	private int seats;
 	private int cnt = 0;
 	private int maxcnt = 1;
-	private double utility = 0;
+	//private double utility = 0;
 	private AID possiblePass;
 	private AID possibleDriver;
+	private double bestPrice;
 	private HashSet<AID> drivers = new HashSet<>();
 	private List<String> way = new ArrayList<>();
-	private List<String> way2 = new ArrayList<>();
-	private double dist2;
-	private double price;
-	private double procent = 0.65;
+	//private List<String> way2 = new ArrayList<>();
+	//private double dist2;
+	private double passPrice = 1000000000;
+	private double driverPrice = 0;
+	private double procent = 1;
 	private final Lock mutex = new ReentrantLock(true);
-	public static Map<String, String> infoToPass = new HashMap<String, String>();
+	private int susanna = 0;
+	//public static Map<String, String> infoToPass = new HashMap<String, String>();
 
-	private void waitOthers() {
+	private void waitOthers(int i) {
 		try {
-			SetUp.b.await();
+			SetUp.b.get(i).await();
 		} catch (InterruptedException e) {
 		} catch (BrokenBarrierException e) {
 		}
@@ -107,9 +110,14 @@ public class TravellerAgent extends Agent {
 				fe.printStackTrace();
 			}
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
+			ParallelBehaviour pb = new ParallelBehaviour();
 			sb.addSubBehaviour(new SendData(agent));
-			waitOthers();
-			sb.addSubBehaviour(new DriverBehaviour(agent));
+			waitOthers(drivers.size());
+			pb.addSubBehaviour(new DriverBehaviour(agent));
+			pb.addSubBehaviour(new PassengerBehaviour(agent));
+			sb.addSubBehaviour(pb);
+			//waitOthers(drivers.size());
+			//sb.addSubBehaviour(new SendConfirm(agent));
 			addBehaviour(sb);
 				cnt++;
 			}
@@ -126,12 +134,12 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
-		String replyWith = String.valueOf(System.currentTimeMillis());
+		//String replyWith = String.valueOf(System.currentTimeMillis());
 		ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			msg.removeReceiver(getAID());
 			msg.setContent(from + " " + to + " " + dist);
 			msg.setConversationId("SendData");
-			msg.setReplyWith(replyWith);
+			//msg.setReplyWith(replyWith);
 			for (AID dr : drivers) {
 			msg.addReceiver(dr);
 			mutex.lock();
@@ -140,36 +148,63 @@ public class TravellerAgent extends Agent {
 			}
 			agent.send(msg);
 	}}
+	/*private class SendConfirm extends OneShotBehaviour{
+		private Agent agent;
+
+
+		public SendConfirm( Agent agent) {
+
+			this.agent = agent;
+		}
+		@Override
+		public void action() {
+			SequentialBehaviour sb = new SequentialBehaviour(agent);
+				ParallelBehaviour pb = new ParallelBehaviour();
+				for (AID dr : drivers) {
+					SequentialBehaviour handleMsg = new SequentialBehaviour(agent);
+					final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
+					handleMsg.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("AgreeForPropose")))));
+					handleMsg.addSubBehaviour(new GetBestPass(agent, dr, handle));
+					pb.addSubBehaviour(handleMsg);
+				}
+				sb.addSubBehaviour(pb);
+				waitOthers(drivers.size());
+				sb.addSubBehaviour(new SendMsgToPass(agent));
+				addBehaviour(sb);
+		}}
+*/
+	private double getDist2(List<String> arr){
+		double sum = 0;
+		for (int i = 0; i < arr.size() - 1; i++) {
+			sum = sum + SetUp.graphMatrix.getPath(arr.get(i), arr.get(i+1)).getWeight();
+		}
+		return sum;
+	}
+
 	private class GetPossiblePass extends OneShotBehaviour {
 		private ReceiverBehaviour.Handle handle;
 		private Agent agent;
 		private AID sender;
-		private double utility=0;
-		private double price=0;
-		private double dist2=0;
+		private double utility = 0;
+		private double price = 0;
+		private double dist2 = 0;
 		private List<String> way2 = new ArrayList<>();
+		private double extra = 0;
+
+
 
 		private void  CountUtility (Agent agent, String[] content, AID sender) {
-			//if (this.dist2 < dist + Double.parseDouble(content[2])) {
-			//		if (this.utility < dist + Double.parseDouble(content[2]) - this.dist2) {
-					this.utility = dist + Double.parseDouble(content[2]) - this.dist2;
-					int sum = 0;
-					for (int i = this.way2.indexOf(content[0]); i < this.way2.indexOf(content[1]); i++) {
-						sum += SetUp.graphMatrix.getPath(this.way2.get(i), this.way2.get(i + 1)).getWeight();
-					}
-					this.price = dist2 - this.utility;
-					possiblePass = sender;
-
-			//	}
-
-			//}
+			utility = getDist2(way) + Double.parseDouble(content[2]) - dist2;
+			price = procent * (Double.parseDouble(content[2]) + extra - utility);
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
-			msg.setConversationId("Agree");
+			msg.setConversationId("Propose");
 			msg.addReceiver(sender);
-			msg.setContent(this.price + "");
+			String tmp = "";
+			for (String w: way2) tmp = tmp + w + " ";
+			msg.setContent(price + " " + utility + "\n" + tmp);
 			agent.send(msg);
 			mutex.lock();
-			System.out.println(agent.getLocalName() + " sends price = " + price + " to " + sender.getLocalName());
+			System.out.println(agent.getLocalName() + " sends propose = " + price + " to " + sender.getLocalName());
 			mutex.unlock();
 
 		}
@@ -178,6 +213,11 @@ public class TravellerAgent extends Agent {
 			this.agent = agent;
 			this.handle = handle;
 			this.sender = sender;
+			this.way2 = way2;
+			this.price = price;
+			this.utility = utility;
+			this.dist2 = dist2;
+			this.extra = extra;
 		}
 		@Override
 		public void action() {
@@ -188,84 +228,75 @@ public class TravellerAgent extends Agent {
 					System.out.println(agent.getAID().getLocalName() + " got msg from " + msg.getSender().getLocalName());
 					mutex.unlock();
 					String[] content = msg.getContent().split(" ");
-					if ((way.contains(content[0])) && (way.contains(content[1]))) {
-						if (way.indexOf(content[0]) < way.indexOf(content[1])) {
-							this.way2 = way;
-							System.out.println(content + ".1 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
+					if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
+							way2 = way;
+							//System.out.println(content + ".1 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName())
 							CountUtility(agent, content, msg.getSender());
-						}
-					} else if ((way.contains(content[0])) && (!way.contains(content[1]))) {
+					} else if (((way.contains(content[0])) && (!way.contains(content[1])) && !(content[0] == to)) || ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) > way.lastIndexOf(content[1])))) {
 						if (way.size() == 2) {
-							this.dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
-							this.way2.add(from);
-							this.way2.add(content[1]);
-							this.way2.add(to);
-							//System.out.println(content + ".2");
-							System.out.println(content + ".2 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
-
+							way2.add(from);
+							way2.add(content[0]);
+							way2.add(content[1]);
+							way2.add(to);
+							dist2 = getDist2(way2);
+							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
+							//System.out.println(content + ".2 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						} else {
-							this.dist2 = dist + SetUp.graphMatrix.getPath(to, content[1]).getWeight();
-							this.way2 = way.subList(0, way.size() - 2);
-							this.way2.add(content[1]);
-							this.way2.add(way.get(way.size() - 1));// +- пара индексов
-							//System.out.println(content + ".3");
-							System.out.println(content + ".3 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
-
+							int i = way.lastIndexOf(content[0]);
+							way2 = way.subList(0, i + 1);
+							way2.add(content[0]);
+							way2.addAll(way.subList(i + 1, way.size() - 1));
+							way2.add(content[1]);
+							way2.add(way.get(way.size() - 1));
+							dist2 = getDist2(way2);
+							extra = SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1],way.get(way.size() - 1)).getWeight();
+							//System.out.println(content + ".3 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						}
-					} else if (!(way.contains(content[0])) && (way.contains(content[1]))) {
+					} else if (!(way.contains(content[0])) && (way.contains(content[1])) && !(content[1] == from)) {
 						if (way.size() == 2) {
-							this.dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
-							this.way2.add(from);
-							this.way2.add(content[0]);
-							this.way2.add(to);
-							//System.out.println(content + ".4");
-							System.out.println(content + ".4 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
-
+							way2.add(from);
+							way2.add(content[0]);
+							way2.add(content[1]);
+							way2.add(to);
+							dist2 = getDist2(way2);
+							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
+							int a = 0;
+							//System.out.println(content + ".4 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						} else {
-							double sum = 0;
-							for (int i = 1; i < way.size() - 1; i++) {
-								sum += SetUp.graphMatrix.getPath(way.get(i), way.get(i + 1)).getWeight();
-							}
-							this.dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + sum;
-							this.way2.add(way.get(0));
-							this.way2.add(content[0]);
-							this.way2.addAll(way.subList(1, way.size() - 1));
-							//System.out.println(content + ".5");
-							System.out.println(content + ".5 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
-
+							int i = way.indexOf(content[1]);
+							way2.add(way.get(0));
+							way2.add(content[0]);
+							way2.addAll(way.subList(1, i + 1));
+							way2.add(content[1]);
+							way.addAll(way.subList(i + 1, way.size()));
+							dist2 = getDist2(way2);
+							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0],way.get(1)).getWeight();
+							//System.out.println(content + ".5 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						}
 					} else {
 						if (way.size() == 2) {
-							this.dist2 = SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(to, content[1]).getWeight() + Double.parseDouble(content[2]);
-							this.way2.add(from);
-							this.way2.add(content[0]);
-							this.way2.add(content[1]);
-							this.way2.add(to);
-			//				System.out.println(dist2 + " .6 " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName() );
-							//System.out.println(content + ".6");
-
-							System.out.println(content + ".6 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
-
+							way2.add(from);
+							way2.add(content[0]);
+							way2.add(content[1]);
+							way2.add(to);
+							dist2 = getDist2(way2);
+							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
+							//System.out.println(content + ".6 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
+							double b = 0;
 							CountUtility(agent, content, msg.getSender());
 						} else {
-							double sum = 0;
-							for (int i = 1; i < way2.size() - 1; i++) {
-								sum += SetUp.graphMatrix.getPath(way2.get(i), way2.get(i + 1)).getWeight();
-							}
-
-							this.dist2 = sum;//SetUp.graphMatrix.getPath(content[0], from).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + sum + SetUp.graphMatrix.getPath(content[1], to).getWeight();
-							this.way2.add(way.get(0));
-							this.way2.add(content[0]);
-							this.way2.addAll(way.subList(1, way.size() - 2));
-							this.way2.add(content[1]);
-							this.way2.add(way.get(way.size() - 1));
-							//System.out.println(content + ".7");
-							System.out.println(content + ".7 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
-
+							way2.add(way.get(0));
+							way2.add(content[0]);
+							way2.addAll(way.subList(1, way.size() - 1));
+							way2.add(content[1]);
+							way2.add(way.get(way.size() - 1));
+							dist2 = getDist2(way2);
+							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0],way.get(1)).getWeight() + SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1],way.get(way.size() - 1)).getWeight();
+							//System.out.println(content + ".7 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						}
 					}
@@ -281,46 +312,21 @@ public class TravellerAgent extends Agent {
 			}
 	}
 
-	private class SendMsgToPass extends OneShotBehaviour {
-		private Agent agent;
-
-		public SendMsgToPass(Agent agent) {
-			this.agent = agent;
-		}
-
-		@Override
-		public void action() {
-			//if (possiblePass != null) {
-				ACLMessage msg = new ACLMessage(ACLMessage.CFP);
-				msg.setConversationId("Agree");
-
-				for (AID dr: drivers){
-				msg.addReceiver(dr);
-					msg.setContent(price + "");
-				agent.send(msg);
-				mutex.lock();
-				System.out.println(agent.getLocalName() + " sends price = " + price + " to " + dr.getLocalName());
-				mutex.unlock();}
-			way = way2;
-			dist = dist2;
-
-		/*}
-			else
-			{
-				mutex.lock();
-				System.out.println(agent.getLocalName() + " goes alone");
-				mutex.unlock();
-			}*/
-	}}
-
-
 	private class GetPossibleDriver extends OneShotBehaviour {
 			private ReceiverBehaviour.Handle handle;
 			private Agent agent;
+			private AID sender;
+			private double price = 0;
+			private List<String> way2 = new ArrayList<>();
+			private double dist2 = 0;
 
-			public GetPossibleDriver(Agent agent, ReceiverBehaviour.Handle handle) {
+			public GetPossibleDriver(Agent agent, AID sender, ReceiverBehaviour.Handle handle) {
 				this.agent = agent;
 				this.handle = handle;
+				this.sender = sender;
+				this.price = price;
+				this.way2 = way2;
+				this.dist2 = dist2;
 			}
 
 			@Override
@@ -328,14 +334,17 @@ public class TravellerAgent extends Agent {
 
 				try {
 					ACLMessage msg = handle.getMessage();
-
-					//System.out.println(msg);
-					if (msg.getConversationId() == "Agree") {
-						if (price < Double.parseDouble(msg.getContent())) {
-							price = (Double.parseDouble(msg.getContent()));
-							possibleDriver = (msg.getSender());
-
-						}
+					if (msg.getConversationId() == "Propose") {
+					way2 = Arrays.asList(msg.getContent().split("\n")[1].split(" "));
+					int i = way2.indexOf(from);
+					int j = way2.subList(i,way2.size()).indexOf(to);
+					dist2 = getDist2(way2.subList(i, j + 1));
+					price = dist2 - dist + Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
+					if (price < passPrice) {
+						passPrice = price;
+						possibleDriver = msg.getSender();
+						driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
+					}
 					}
 				} catch (ReceiverBehaviour.TimedOut timedOut) {
 					//System.out.println(agent.getLocalName() + ": time out while receiving message");
@@ -346,89 +355,162 @@ public class TravellerAgent extends Agent {
 
 			}
 	private class SendMsgToDriver extends OneShotBehaviour {
-		private ReceiverBehaviour.Handle handle;
 		private Agent agent;
 
 
-		public SendMsgToDriver(Agent agent, ReceiverBehaviour.Handle handle) {
+		public SendMsgToDriver(Agent agent) {
 			this.agent = agent;
-			this.handle = handle;
 		}
+
 		@Override
 		public void action() {
-			ACLMessage agreeMsg2 = new ACLMessage(ACLMessage.AGREE);
+			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			if (possibleDriver != null) {
-				agreeMsg2.addReceiver(possibleDriver);
-				agreeMsg2.setConversationId("Confirm");
-				agent.send(agreeMsg2);
-				AID driver;
-				if (price < utility) driver = agent.getAID();
-				else driver = possibleDriver;
-				System.out.println(agent.getLocalName() + ": goes with  " + possibleDriver.getLocalName()
-						+ "; with economy " + utility + " driver is "+ driver.getLocalName());
-
-				ACLMessage refuseMsg = new ACLMessage(ACLMessage.REFUSE);
-				refuseMsg.setConversationId("Disagree");
-				for (AID dr : drivers) {
-					if (dr.getLocalName() != possibleDriver.getLocalName()) refuseMsg.addReceiver(dr);
-					System.out.println(agent.getLocalName() + ": refuse agree from " + dr.getLocalName());
-				}
-				agent.send(refuseMsg);
-				/*
-				try {
-					DFService.deregister(agent);
-				} catch (FIPAException fe) {
-					fe.printStackTrace();
-				}
-				*/
-			}}}
-
-	private class DriverBehaviour extends OneShotBehaviour {
-
-				private Agent agent;
-
-				public DriverBehaviour(Agent agent) {
-					this.agent = agent;
-				}
-
-				@Override
-				public void action() {
-					SequentialBehaviour sb = new SequentialBehaviour(agent);
-
-					ParallelBehaviour pb = new ParallelBehaviour();
-					for (AID dr: drivers) {
-						SequentialBehaviour handleMsg = new SequentialBehaviour(agent);
-						final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
-						handleMsg.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr),(MessageTemplate.MatchConversationId("SendData")))));
-						handleMsg.addSubBehaviour(new GetPossiblePass(agent, dr, handle));
-						//handleMsg.addSubBehaviour(new SendMsgToPass(agent));
-						pb.addSubBehaviour(handleMsg);
+				msg.addReceiver(possibleDriver);
+				msg.setContent(driverPrice + "");
+				msg.setConversationId("AgreeForPropose");
+				agent.send(msg);
+				System.out.println(agent.getAID().getLocalName() + " agrees for propose from " + possibleDriver.getLocalName());
+				for (AID dr: drivers) {
+					if (dr != possibleDriver){
+					ACLMessage rfs = new ACLMessage(ACLMessage.REFUSE);
+					rfs.addReceiver(dr);
+					rfs.setConversationId("RefuseForPropose");
+					agent.send(rfs);
 					}
-					sb.addSubBehaviour(pb);
-					//waitOthers();
-
-					addBehaviour(sb);
 				}
 			}
-	private class PassengerBehaviour extends OneShotBehaviour {
+		} }
 
+	private class GetBestPass extends OneShotBehaviour {
+		private ReceiverBehaviour.Handle handle;
+		private Agent agent;
+		private AID sender;
+		private double price = 0;
+
+
+		public GetBestPass (Agent agent, AID sender, ReceiverBehaviour.Handle handle) {
+			this.agent = agent;
+			this.handle = handle;
+			this.sender = sender;
+			this.price = price;
+
+		}
+
+		@Override
+		public void action() {
+
+			try {
+				ACLMessage msg = handle.getMessage();
+				if (msg.getConversationId() == "AgreeForPropose") {
+					price = Double.parseDouble(msg.getContent());
+					if (price > bestPrice) {
+						bestPrice = price;
+						possiblePass = msg.getSender();
+					}
+				}
+			} catch (ReceiverBehaviour.TimedOut timedOut) {
+				//System.out.println(agent.getLocalName() + ": time out while receiving message");
+			} catch (ReceiverBehaviour.NotYetReady notYetReady) {
+				//System.out.println(agent.getLocalName() + ": message not yet ready");
+				//notYetReady.printStackTrace();
+			}}
+
+	}
+
+	private class SendMsgToPass extends OneShotBehaviour {
 		private Agent agent;
 
-		public PassengerBehaviour(Agent agent) {
+
+		public SendMsgToPass(Agent agent) {
 			this.agent = agent;
 		}
 
 		@Override
 		public void action() {
-			SequentialBehaviour sb = new SequentialBehaviour(agent);
-			final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
-			sb.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.MatchConversationId("Agree")));
-			sb.addSubBehaviour(new GetPossibleDriver(agent, handle));
-			sb.addSubBehaviour(new SendMsgToDriver(agent, handle));
-			addBehaviour(sb);
+			ACLMessage msg = new ACLMessage(ACLMessage.AGREE);
+			if (possiblePass != null) {
+				msg.addReceiver(possiblePass);
+				msg.setConversationId("AgreeForAgree");
+				agent.send(msg);
+				System.out.println(agent.getAID().getLocalName() + " agrees for agree from " + possiblePass.getLocalName());
+				for (AID dr: drivers) {
+					if (dr != possiblePass){
+						ACLMessage rfs = new ACLMessage(ACLMessage.REFUSE);
+						rfs.addReceiver(dr);
+						rfs.setConversationId("RefuseForAgree");
+						agent.send(rfs);
+					}
+				}
+			}
+		} }
 
+		private class DriverBehaviour extends OneShotBehaviour {
+
+			private Agent agent;
+
+			public DriverBehaviour(Agent agent) {
+				this.agent = agent;
+			}
+
+			@Override
+			public void action() {
+				SequentialBehaviour sb = new SequentialBehaviour(agent);
+
+				ParallelBehaviour pb = new ParallelBehaviour();
+				for (AID dr : drivers) {
+					SequentialBehaviour handleMsg = new SequentialBehaviour(agent);
+					final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
+					handleMsg.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("SendData")))));
+					handleMsg.addSubBehaviour(new GetPossiblePass(agent, dr, handle));
+					pb.addSubBehaviour(handleMsg);
+				}
+				sb.addSubBehaviour(pb);
+				//waitOthers(drivers.size());
+				ParallelBehaviour pb2 = new ParallelBehaviour();
+				for (AID dr : drivers) {
+					SequentialBehaviour handleMsg2 = new SequentialBehaviour(agent);////все переименовать и это будет другой класс
+					final ReceiverBehaviour.Handle handle2 = ReceiverBehaviour.newHandle();
+					handleMsg2.addSubBehaviour(new ReceiverBehaviour(agent, handle2, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("AgreeForPropose")))));
+					handleMsg2.addSubBehaviour(new GetBestPass(agent, dr, handle2));
+					pb.addSubBehaviour(handleMsg2);
+				}
+				sb.addSubBehaviour(pb2);
+				waitOthers(drivers.size());
+				sb.addSubBehaviour(new SendMsgToPass(agent));
+				addBehaviour(sb);
+			}
 		}
-	}
+
+		private class PassengerBehaviour extends OneShotBehaviour {
+
+			private Agent agent;
+
+			public PassengerBehaviour(Agent agent) {
+				this.agent = agent;
+			}
+
+			@Override
+			public void action() {
+				SequentialBehaviour sb = new SequentialBehaviour(agent);
+
+				ParallelBehaviour pb = new ParallelBehaviour();
+				for (AID dr : drivers) {
+					SequentialBehaviour handleMsg = new SequentialBehaviour(agent);
+					final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
+					handleMsg.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("Propose")))));
+					handleMsg.addSubBehaviour(new GetPossibleDriver(agent, dr, handle));
+					pb.addSubBehaviour(handleMsg);
+				}
+				sb.addSubBehaviour(pb);
+				waitOthers(drivers.size());
+				sb.addSubBehaviour(new SendMsgToDriver(agent));
+				addBehaviour(sb);
+
+			}
+		}
+
+
 
 
 

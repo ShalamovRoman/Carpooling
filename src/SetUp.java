@@ -16,7 +16,7 @@ public class SetUp extends Agent {
 //	public static FloydWarshallShortestPaths graphMatrix;
 	public static DijkstraShortestPath graphMatrix;
 
-	public static CyclicBarrier b;
+	public static List<CyclicBarrier> b = new ArrayList<>();
 	public static Map<String, String> categories = new HashMap<String, String>();
 	protected void setup() {
 
@@ -47,7 +47,9 @@ public class SetUp extends Agent {
 				"E D 4\n" +
 				"A G 4\n";
 		String[] data = line.split("\n");
-		b = new CyclicBarrier(data.length );
+		for (int i = 1; i <= data.length; i++) {
+			b.add(new CyclicBarrier(i));
+		}
 		for (int i = 0; i < data.length; i++) {
 			try {
 				String[] info = data[i].split(" ");
