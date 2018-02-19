@@ -15,9 +15,10 @@ public class SetUp extends Agent {
 	private static SimpleWeightedGraph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 //	public static FloydWarshallShortestPaths graphMatrix;
 	public static DijkstraShortestPath graphMatrix;
+	//public static Map<AID, String> categories = new HashMap<>();
 
 	public static List<CyclicBarrier> b = new ArrayList<>();
-	public static Map<String, String> categories = new HashMap<String, String>();
+	public static Map<Integer, String> categories = new HashMap<Integer, String>();
 	protected void setup() {
 
 		graph.addVertex("A");
@@ -56,7 +57,7 @@ public class SetUp extends Agent {
 				AgentController traveler = controller.createNewAgent("Traveller_" + i
 						, TravellerAgent.class.getName(), info);
 				traveler.start();
-				categories.put("Traveller" + i, "traveller");
+				categories.put(i, "not set");
 
 			}
 			catch (ControllerException ex) {

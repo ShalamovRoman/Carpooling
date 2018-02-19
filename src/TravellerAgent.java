@@ -24,15 +24,16 @@ public class TravellerAgent extends Agent {
 	private int maxcnt = 3;
 	private AID possiblePass;
 	private AID possibleDriver;
-	private double bestPrice;
+	private double bestPrice = Double.NEGATIVE_INFINITY;
 	private HashSet<AID> drivers = new HashSet<>();
 	private List<String> way = new ArrayList<>();
-	private double passPrice = 1000000000;
-	private double driverPrice = 0;
+	private double passPrice = Double.POSITIVE_INFINITY;
+	private double driverPrice = 1000000000;
 	private double procent = 0.5;
 	private final Lock mutex = new ReentrantLock(true);
 	private String susanna = "not set";
 	private Map<AID, String> utilities= new HashMap<>();
+	//private Map<AID, String> categories = new HashMap<>();
 	private String passSusanna = "not set";
 
 
@@ -343,11 +344,14 @@ public class TravellerAgent extends Agent {
 					int j = way2.subList(i,way2.size()).indexOf(to);
 					dist2 = getDist2(way2.subList(i, j + 1));
 					price = (1 - procent) * (dist - dist2 + Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0])) + util; //тут чет изменила
-					//price = (dist - dist2) + (1 - procent) * Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]) + util;
-					if  (price < passPrice && util > 0) {
-						passPrice = price;
+					double price1 = (1 - procent) * (dist2 - dist + Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0])) + util;
+					//System.out.println(price + " " + price1);
+					//price1 = (dist - dist2) + (1 - procent) * Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]) + util;
+					driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
+
+					if  (driverPrice < passPrice && util > 0 && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "passenger")  {
+						passPrice = driverPrice;
 						possibleDriver = msg.getSender();
-						driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
 					}
 				}
 			} catch (ReceiverBehaviour.TimedOut timedOut) {
@@ -372,6 +376,8 @@ public class TravellerAgent extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			if (possibleDriver != null) {
 				msg.addReceiver(possibleDriver);
+				SetUp.categories.replace(Integer.parseInt(possibleDriver.getLocalName().replaceAll("[\\D]", "")),"driver");
+				//System.out.println(agent.getLocalName() + " sends to pd" + possibleDriver.getLocalName());
 				msg.setContent(driverPrice + " " + susanna);
 				msg.setConversationId("AgreeForPropose");
 				agent.send(msg);
@@ -409,7 +415,7 @@ public class TravellerAgent extends Agent {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForPropose") {
 					price = Double.parseDouble(msg.getContent().split(" ")[0]);
-					if (price > bestPrice) {
+					if (price > bestPrice && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "driver") {
 						bestPrice = price;
 						possiblePass = msg.getSender();
 						passSusanna = msg.getContent().split(" ")[1];
@@ -436,10 +442,17 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			ACLMessage msg = new ACLMessage(ACLMessage.AGREE);
 			if (possiblePass != null) {
+				SetUp.categories.replace(Integer.parseInt(possiblePass.getLocalName().replaceAll("[\\D]", "")),"passenger");
+				System.out.println(possiblePass.getLocalName() + " is passenger to " + agent.getLocalName());
 				if (passSusanna == "driver") {
 					susanna = "passenger";
 					possibleDriver = msg.getSender();
 					msg.setContent("driver");
+				}
+				else if (passSusanna == "passenger") {
+					susanna = "driver";
+					//possibleDriver = msg.getSender();
+					msg.setContent("passenger");
 				}
 				else {
 					//else {
