@@ -36,6 +36,9 @@ public class TravellerAgent extends Agent {
 	private String passSusanna = "not set";
 
 
+	private int getInt(AID agent) {
+		return Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", ""));
+	}
 	private void waitOthers(int i) {
 		try {
 			SetUp.b.get(i).await();
@@ -74,6 +77,7 @@ public class TravellerAgent extends Agent {
 			}
 		});
 	}
+
 
 	private class LifeCycle extends SequentialBehaviour {
 		public LifeCycle(Agent agent) {
@@ -151,9 +155,6 @@ public class TravellerAgent extends Agent {
 			msg.setConversationId("SendData");
 			for (AID dr : drivers) {
 				msg.addReceiver(dr);
-				mutex.lock();
-				System.out.println(agent.getAID().getLocalName() + " sends data to " + dr.getLocalName());
-				mutex.unlock();
 			}
 			agent.send(msg);
 		}}
@@ -210,9 +211,6 @@ public class TravellerAgent extends Agent {
 			try {
 				ACLMessage msg = handle.getMessage();
 				if  (msg.getContent() != null) {
-					mutex.lock();
-					System.out.println(agent.getAID().getLocalName() + " got msg from " + msg.getSender().getLocalName());
-					mutex.unlock();
 					String[] content = msg.getContent().split(" ");
 					if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
 						way2 = way;
@@ -318,7 +316,7 @@ public class TravellerAgent extends Agent {
 					dist2 = getDist2(way2.subList(i, j + 1));
 					driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
 
-					if  (driverPrice < passPrice && util > 0 && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "tmppassenger")  {
+					if  (driverPrice < passPrice && util > 0 && SetUp.categories.get(getInt(msg.getSender())) != "tmppassenger")  {
 						passPrice = driverPrice;
 						possibleDriver = msg.getSender();
 					}
@@ -341,8 +339,8 @@ public class TravellerAgent extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			if (possibleDriver != null) {
 				msg.addReceiver(possibleDriver);
-				SetUp.categories.replace(Integer.parseInt(possibleDriver.getLocalName().replaceAll("[\\D]", "")),"tmpdriver");
-				msg.setContent(driverPrice + " " + susanna);
+				SetUp.categories.replace(getInt(possibleDriver),"tmpdriver");
+				msg.setContent(driverPrice + "");
 				msg.setConversationId("AgreeForPropose");
 				agent.send(msg);
 				System.out.println(agent.getAID().getLocalName() + " agrees for propose from " + possibleDriver.getLocalName());
@@ -378,11 +376,10 @@ public class TravellerAgent extends Agent {
 			try {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForPropose") {
-					price = Double.parseDouble(msg.getContent().split(" ")[0]);
-					if (price > bestPrice && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "tmpdriver") {
+					price = Double.parseDouble(msg.getContent());
+					if (price > bestPrice && SetUp.categories.get(getInt(msg.getSender())) != "tmpdriver") {
 						bestPrice = price;
 						possiblePass = msg.getSender();
-						passSusanna = msg.getContent().split(" ")[1];
 					}
 				}
 			}
@@ -404,31 +401,23 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			ACLMessage msg = new ACLMessage(ACLMessage.AGREE);
 			if (possiblePass != null) {
-				SetUp.categories.replace(Integer.parseInt(possiblePass.getLocalName().replaceAll("[\\D]", "")),"tmppassenger");
-				if (passSusanna == "driver") {
-					susanna = "passenger";
-					possibleDriver = msg.getSender();
-					msg.setContent("driver");
-				}
-				else if (passSusanna == "passenger") {
-					susanna = "driver";
-					msg.setContent("passenger");
-				}
-				else {
+				SetUp.categories.replace(getInt(possiblePass),"tmppassenger");
+
 					if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) == Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
 						System.out.println("hui");
 					}
 					else {
 						if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) > Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
-							susanna = "driver";
+							SetUp.categories.replace(getInt(agent.getAID()),"driver"); //not sure about tmp
+							SetUp.categories.replace(getInt(possiblePass),"passenger");
 							msg.setContent("passenger");
 						} else {
-							susanna = "passenger";
-							msg.setContent("driver");
-							System.out.println((Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) + " " + Double.parseDouble(utilities.get(possiblePass).split(" ")[1])));
+							SetUp.categories.replace(getInt(agent.getAID()),"passenger");
+							SetUp.categories.replace(getInt(possiblePass),"driver");
+							//System.out.println((Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) + " " + Double.parseDouble(utilities.get(possiblePass).split(" ")[1])));
 						}
 					}
-				}
+
 				msg.addReceiver(possiblePass);
 				msg.setConversationId("AgreeForAgree");
 				agent.send(msg);
@@ -554,14 +543,20 @@ public class TravellerAgent extends Agent {
 
 					if (msg.getContent().contains("d")) {
 						System.out.println(agent.getLocalName() + " is driver to " + msg.getSender().getLocalName());
-						SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"driver");
-						SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"passenger");
+						//SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"driver");
+						//SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"passenger");
 					}
 					else {
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
-						SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"passenger");
-						SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"driver");
+						//SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"passenger");
+						//SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"driver");
 					}
+					for (Map.Entry<Integer,String> entry : SetUp.categories.entrySet()) {
+						String key = entry.getKey()+ "";
+						String value = entry.getValue();
+						System.out.println(key + " " + value);
+					}
+
 				}
 
 			}
