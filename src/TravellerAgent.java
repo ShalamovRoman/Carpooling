@@ -33,7 +33,6 @@ public class TravellerAgent extends Agent {
 	private final Lock mutex = new ReentrantLock(true);
 	private String susanna = "not set";
 	private Map<AID, String> utilities= new HashMap<>();
-	//private Map<AID, String> categories = new HashMap<>();
 	private String passSusanna = "not set";
 
 
@@ -124,8 +123,6 @@ public class TravellerAgent extends Agent {
 					pb.addSubBehaviour(new DriverBehaviour(agent));
 					pb.addSubBehaviour(new PassengerBehaviour(agent));
 					sb.addSubBehaviour(pb);
-					//waitOthers(drivers.size());
-					//sb.addSubBehaviour(new SendConfirm(agent));
 					addBehaviour(sb);
 				}
 				else if (susanna == "driver" && seats > 0) {
@@ -133,13 +130,6 @@ public class TravellerAgent extends Agent {
 					sb.addSubBehaviour(pb);
 					addBehaviour(sb);
 				}
-
-/*			pb.addSubBehaviour(new DriverBehaviour(agent));
-			pb.addSubBehaviour(new PassengerBehaviour(agent));
-			sb.addSubBehaviour(pb);
-			//waitOthers(drivers.size());
-			//sb.addSubBehaviour(new SendConfirm(agent));
-			addBehaviour(sb); */
 				cnt++;
 			}
 		}
@@ -155,12 +145,10 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
-			//String replyWith = String.valueOf(System.currentTimeMillis());
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			msg.removeReceiver(getAID());
 			msg.setContent(from + " " + to + " " + dist);
 			msg.setConversationId("SendData");
-			//msg.setReplyWith(replyWith);
 			for (AID dr : drivers) {
 				msg.addReceiver(dr);
 				mutex.lock();
@@ -193,9 +181,7 @@ public class TravellerAgent extends Agent {
 		private void  CountUtility (Agent agent, String[] content, AID sender) {
 			utility = getDist2(way) + Double.parseDouble(content[2]) - dist2;
 			utilities.put(sender, utility + "");
-			System.out.println("receiver  " + sender.getLocalName() + " util " + utility + " sender " + agent.getLocalName());
 			price = procent * (Double.parseDouble(content[2]) + extra) - utility;
-
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			msg.setConversationId("Propose");
 			msg.addReceiver(sender);
@@ -228,10 +214,8 @@ public class TravellerAgent extends Agent {
 					System.out.println(agent.getAID().getLocalName() + " got msg from " + msg.getSender().getLocalName());
 					mutex.unlock();
 					String[] content = msg.getContent().split(" ");
-					System.out.println(msg.getContent() + "aaaaaaa");
 					if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
 						way2 = way;
-						//System.out.println(content + ".1 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName())
 						CountUtility(agent, content, msg.getSender());
 					} else if (((way.contains(content[0])) && (!way.contains(content[1])) && !(content[0] == to)) || ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) > way.lastIndexOf(content[1])))) {
 						if (way.size() == 2) {
@@ -241,7 +225,6 @@ public class TravellerAgent extends Agent {
 							way2.add(to);
 							dist2 = getDist2(way2);
 							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
-							//System.out.println(content + ".2 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						} else {
 							int i = way.lastIndexOf(content[0]);
@@ -252,7 +235,6 @@ public class TravellerAgent extends Agent {
 							way2.add(way.get(way.size() - 1));
 							dist2 = getDist2(way2);
 							extra = SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1],way.get(way.size() - 1)).getWeight();
-							//System.out.println(content + ".3 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						}
 					} else if (!(way.contains(content[0])) && (way.contains(content[1])) && !(content[1] == from)) {
@@ -264,7 +246,6 @@ public class TravellerAgent extends Agent {
 							dist2 = getDist2(way2);
 							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
 							int a = 0;
-							//System.out.println(content + ".4 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						} else {
 							int i = way.indexOf(content[1]);
@@ -275,7 +256,6 @@ public class TravellerAgent extends Agent {
 							way.addAll(way.subList(i + 1, way.size()));
 							dist2 = getDist2(way2);
 							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0],way.get(1)).getWeight();
-							//System.out.println(content + ".5 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						}
 					} else {
@@ -286,7 +266,6 @@ public class TravellerAgent extends Agent {
 							way2.add(to);
 							dist2 = getDist2(way2);
 							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
-							//System.out.println(content + ".6 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							double b = 0;
 							CountUtility(agent, content, msg.getSender());
 						} else {
@@ -297,19 +276,13 @@ public class TravellerAgent extends Agent {
 							way2.add(way.get(way.size() - 1));
 							dist2 = getDist2(way2);
 							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0],way.get(1)).getWeight() + SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1],way.get(way.size() - 1)).getWeight();
-							//System.out.println(content + ".7 to " + agent.getAID().getLocalName() + " from " + msg.getSender().getLocalName());
 							CountUtility(agent, content, msg.getSender());
 						}
 					}
 				}
-
-			} catch (ReceiverBehaviour.TimedOut timedOut) {
-				//System.out.println(agent.getLocalName() + ": time out while receiving message");
-			} catch (ReceiverBehaviour.NotYetReady notYetReady) {
-				//System.out.println(agent.getLocalName() + ": message not yet ready");
-				//notYetReady.printStackTrace();
 			}
-
+			catch (ReceiverBehaviour.TimedOut timedOut) { }
+			catch (ReceiverBehaviour.NotYetReady notYetReady) { }
 		}
 	}
 
@@ -343,29 +316,21 @@ public class TravellerAgent extends Agent {
 					int i = way2.indexOf(from);
 					int j = way2.subList(i,way2.size()).indexOf(to);
 					dist2 = getDist2(way2.subList(i, j + 1));
-					price = (1 - procent) * (dist - dist2 + Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0])) + util; //тут чет изменила
-					double price1 = (1 - procent) * (dist2 - dist + Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0])) + util;
-					//System.out.println(price + " " + price1);
-					//price1 = (dist - dist2) + (1 - procent) * Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]) + util;
 					driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
 
-					if  (driverPrice < passPrice && util > 0 && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "passenger")  {
+					if  (driverPrice < passPrice && util > 0 && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "tmppassenger")  {
 						passPrice = driverPrice;
 						possibleDriver = msg.getSender();
 					}
 				}
-			} catch (ReceiverBehaviour.TimedOut timedOut) {
-				//System.out.println(agent.getLocalName() + ": time out while receiving message");
-			} catch (ReceiverBehaviour.NotYetReady notYetReady) {
-				//System.out.println(agent.getLocalName() + ": message not yet ready");
-				//notYetReady.printStackTrace();
-			}}
-
+			}
+			catch (ReceiverBehaviour.TimedOut timedOut) {}
+			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
+		}
 	}
 
 	private class SendMsgToDriver extends OneShotBehaviour {
 		private Agent agent;
-
 
 		public SendMsgToDriver(Agent agent) {
 			this.agent = agent;
@@ -376,8 +341,7 @@ public class TravellerAgent extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			if (possibleDriver != null) {
 				msg.addReceiver(possibleDriver);
-				SetUp.categories.replace(Integer.parseInt(possibleDriver.getLocalName().replaceAll("[\\D]", "")),"driver");
-				//System.out.println(agent.getLocalName() + " sends to pd" + possibleDriver.getLocalName());
+				SetUp.categories.replace(Integer.parseInt(possibleDriver.getLocalName().replaceAll("[\\D]", "")),"tmpdriver");
 				msg.setContent(driverPrice + " " + susanna);
 				msg.setConversationId("AgreeForPropose");
 				agent.send(msg);
@@ -415,18 +379,16 @@ public class TravellerAgent extends Agent {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForPropose") {
 					price = Double.parseDouble(msg.getContent().split(" ")[0]);
-					if (price > bestPrice && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "driver") {
+					if (price > bestPrice && SetUp.categories.get(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", ""))) != "tmpdriver") {
 						bestPrice = price;
 						possiblePass = msg.getSender();
 						passSusanna = msg.getContent().split(" ")[1];
 					}
 				}
-			} catch (ReceiverBehaviour.TimedOut timedOut) {
-				//System.out.println(agent.getLocalName() + ": time out while receiving message");
-			} catch (ReceiverBehaviour.NotYetReady notYetReady) {
-				//System.out.println(agent.getLocalName() + ": message not yet ready");
-				//notYetReady.printStackTrace();
-			}}
+			}
+			catch (ReceiverBehaviour.TimedOut timedOut) {}
+			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
+		}
 
 	}
 
@@ -442,8 +404,7 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			ACLMessage msg = new ACLMessage(ACLMessage.AGREE);
 			if (possiblePass != null) {
-				SetUp.categories.replace(Integer.parseInt(possiblePass.getLocalName().replaceAll("[\\D]", "")),"passenger");
-				System.out.println(possiblePass.getLocalName() + " is passenger to " + agent.getLocalName());
+				SetUp.categories.replace(Integer.parseInt(possiblePass.getLocalName().replaceAll("[\\D]", "")),"tmppassenger");
 				if (passSusanna == "driver") {
 					susanna = "passenger";
 					possibleDriver = msg.getSender();
@@ -451,22 +412,14 @@ public class TravellerAgent extends Agent {
 				}
 				else if (passSusanna == "passenger") {
 					susanna = "driver";
-					//possibleDriver = msg.getSender();
 					msg.setContent("passenger");
 				}
 				else {
-					//else {
-					//System.out.println(Double.parseDouble(utilities.get(possiblePass).split(" ")[0]));
-					//System.out.println(Double.parseDouble(utilities.get(possiblePass).split(" ")[1]));
 					if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) == Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
 						System.out.println("hui");
-						System.out.println(Double.parseDouble(utilities.get(possiblePass).split(" ")[0]));
-						System.out.println(Double.parseDouble(utilities.get(possiblePass).split(" ")[1]));
 					}
 					else {
 						if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) > Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
-
-
 							susanna = "driver";
 							msg.setContent("passenger");
 						} else {
@@ -487,23 +440,8 @@ public class TravellerAgent extends Agent {
 						rfs.setConversationId("RefuseForAgree");
 						agent.send(rfs);
 
-						//Check4refuses
 					}
-/*					else {
-					    addBehaviour(new ChangePassengerCategory(possiblePass,agent));
-                    } */
 				}
-               /*
-                susanna = "driver";
-                seats--;
-                System.out.println(agent.getLocalName() + " category changed to " + susanna);
-                addBehaviour(new WakerBehaviour(agent, 5000) {
-                    @Override
-                    protected void onWake() {
-                        System.out.println("restarting lifecycle of " + agent.getLocalName());
-                        addBehaviour(new LifeCycle(myAgent));
-                    }
-                });*/
 			}
 		} }
 
@@ -528,7 +466,6 @@ public class TravellerAgent extends Agent {
 				pb.addSubBehaviour(handleMsg);
 			}
 			sb.addSubBehaviour(pb);
-			//waitOthers(drivers.size());
 			ParallelBehaviour pb2 = new ParallelBehaviour();
 			for (AID dr : drivers) {
 				SequentialBehaviour handleMsg2 = new SequentialBehaviour(agent);////все переименовать и это будет другой класс
@@ -615,16 +552,21 @@ public class TravellerAgent extends Agent {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForAgree") {
 
-					if (msg.getContent().contains("d")) {System.out.println(agent.getLocalName() + " is driver to " + msg.getSender().getLocalName());}
-					else {System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());}
+					if (msg.getContent().contains("d")) {
+						System.out.println(agent.getLocalName() + " is driver to " + msg.getSender().getLocalName());
+						SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"driver");
+						SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"passenger");
+					}
+					else {
+						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
+						SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"passenger");
+						SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"driver");
+					}
 				}
 
-			} catch (ReceiverBehaviour.TimedOut timedOut) {
-				//System.out.println(agent.getLocalName() + ": time out while receiving message");
-			} catch (ReceiverBehaviour.NotYetReady notYetReady) {
-				//System.out.println(agent.getLocalName() + ": message not yet ready");
-				//notYetReady.printStackTrace();
 			}
+			catch (ReceiverBehaviour.TimedOut timedOut) {}
+			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
 		}
 	}
 }

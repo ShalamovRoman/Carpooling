@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9db72ec7-d6d0-40eb-9db0-f104be71284b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/APDescription.txt" afterPath="$PROJECT_DIR$/APDescription.txt" />
-      <change beforePath="$PROJECT_DIR$/MTPs-Main-Container.txt" afterPath="$PROJECT_DIR$/MTPs-Main-Container.txt" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$1.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$1.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory$1.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory$1.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$DriverBehaviour.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$DriverBehaviour.class" />
@@ -13,11 +11,13 @@
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetConfirmFromDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetConfirmFromDriver.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossibleDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossibleDriver.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossiblePass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossiblePass.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$LifeCycle.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$LifeCycle.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$PassengerBehaviour.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$PassengerBehaviour.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendAgreeMsgToPass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendAgreeMsgToPass.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendData.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendData.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendMsgToDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendMsgToDriver.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$StartCycle.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$StartCycle.class" />
       <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent.class" />
-      <change beforePath="$PROJECT_DIR$/src/SetUp.java" afterPath="$PROJECT_DIR$/src/SetUp.java" />
       <change beforePath="$PROJECT_DIR$/src/TravellerAgent.java" afterPath="$PROJECT_DIR$/src/TravellerAgent.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -40,8 +40,8 @@
       <file leaf-file-name="TravellerAgent.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/TravellerAgent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="197">
-              <caret line="417" column="98" lean-forward="false" selection-start-line="417" selection-start-column="98" selection-end-line="417" selection-end-column="98" />
+            <state relative-caret-position="418">
+              <caret line="568" column="63" lean-forward="false" selection-start-line="568" selection-start-column="63" selection-end-line="568" selection-end-column="63" />
               <folding />
             </state>
           </provider>
@@ -51,7 +51,7 @@
         <entry file="file://$PROJECT_DIR$/src/SetUp.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="204">
-              <caret line="23" column="29" lean-forward="true" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
+              <caret line="23" column="29" lean-forward="false" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
               <folding>
                 <element signature="e#892#909#0" expanded="true" />
               </folding>
@@ -313,12 +313,12 @@
       <workItem from="1516216513674" duration="30710000" />
       <workItem from="1516316169178" duration="15232000" />
       <workItem from="1518899609435" duration="9721000" />
-      <workItem from="1518978989288" duration="6776000" />
+      <workItem from="1518978989288" duration="8731000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="187217000" />
+    <option name="totallyTimeSpent" value="189172000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
@@ -578,7 +578,7 @@
     <entry file="file://$PROJECT_DIR$/src/SetUp.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
-          <caret line="23" column="29" lean-forward="true" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
+          <caret line="23" column="29" lean-forward="false" selection-start-line="23" selection-start-column="29" selection-end-line="23" selection-end-column="29" />
           <folding>
             <element signature="e#892#909#0" expanded="true" />
           </folding>
@@ -587,8 +587,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TravellerAgent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="197">
-          <caret line="417" column="98" lean-forward="false" selection-start-line="417" selection-start-column="98" selection-end-line="417" selection-end-column="98" />
+        <state relative-caret-position="418">
+          <caret line="568" column="63" lean-forward="false" selection-start-line="568" selection-start-column="63" selection-end-line="568" selection-end-column="63" />
           <folding />
         </state>
       </provider>
