@@ -5,8 +5,11 @@ import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
+import jade.domain.introspection.AddedBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.proto.states.ReplySender;
+
 import java.lang.*;
 import java.util.HashSet;
 import java.util.*;
@@ -25,15 +28,13 @@ public class TravellerAgent extends Agent {
 	private AID possiblePass;
 	private AID possibleDriver;
 	private double bestPrice = Double.NEGATIVE_INFINITY;
-	private HashSet<AID> drivers = new HashSet<>();
+	private HashSet<AID> drivers;
 	private List<String> way = new ArrayList<>();
 	private double passPrice = Double.POSITIVE_INFINITY;
 	private double driverPrice = 1000000000;
 	private double procent = 0.5;
 	private final Lock mutex = new ReentrantLock(true);
-	private String susanna = "not set";
-	private Map<AID, String> utilities= new HashMap<>();
-	private String passSusanna = "not set";
+	private Map<AID, String> utilities = new HashMap<>();
 
 
 	private int getInt(AID agent) {
@@ -79,10 +80,28 @@ public class TravellerAgent extends Agent {
 	}
 
 
-	private class LifeCycle extends SequentialBehaviour {
+	private class LifeCycle extends OneShotBehaviour {
+		private Agent agent;
 		public LifeCycle(Agent agent) {
-			super(agent);
+			this.agent = agent;
+		}
+			@Override
+			public void action() {
+			//super(agent);
+			//SequentialBehaviour sb = new SequentialBehaviour();
+			//sb.addSubBehaviour(new StartCycle(agent, this));
+			//sb.addSubBehaviour(new StartCycle(agent, this));
+			//sb.addSubBehaviour(new StartCycle(agent, this));
+			//addBehaviour(new StartCycle(agent, this));
+			//waitOthers(drivers.size());
 			addBehaviour(new StartCycle(agent, this));
+				//addBehaviour(new Restarter(agent, 10000));
+
+			//while (cnt < maxcnt) {
+				//addBehaviour(new StartCycle(agent, this));
+				//waitOthers(drivers.size());
+				//cnt++;
+			//}
 		}
 	}
 
@@ -98,43 +117,62 @@ public class TravellerAgent extends Agent {
 
 		@Override
 		public void action() {
-			System.out.println("cycle started");
+
 			if (cnt < maxcnt) {
-				if (cnt == 0) {
+				//if (cnt == 0) {
 					DFAgentDescription template = new DFAgentDescription();
 					ServiceDescription serviceDescription = new ServiceDescription();
 					serviceDescription.setType("Tachki");
 					template.addServices(serviceDescription);
+					drivers = new HashSet<>();
 					try {
 						DFAgentDescription[] agents = DFService.search(agent, template);
 						for (DFAgentDescription a : agents) {
 
-							if (!(a.getName().equals(agent.getAID()))) drivers.add(a.getName());
+							if (!(a.getName().equals(agent.getAID())) && (SetUp.categories.get(getInt(a.getName())) != "passenger")) drivers.add(a.getName());
 						}
 					} catch (FIPAException fe) {
 						fe.printStackTrace();
 					}
-				}
-				System.out.println(susanna);
+				//}
 				SequentialBehaviour sb = new SequentialBehaviour(agent);
 				ParallelBehaviour pb = new ParallelBehaviour();
-				sb.addSubBehaviour(new SendData(agent));
+				//sb.addSubBehaviour(new SendData(agent));
 				waitOthers(drivers.size());
-
-				System.out.println(susanna);
-
-				if (susanna == "not set") {
+				System.out.println(agent.getLocalName() + " starting new lifecycle with category " + SetUp.categories.get(getInt(agent.getAID())));
+				System.out.println(drivers.size());
+				for (Map.Entry<Integer,String> entry : SetUp.categories.entrySet()) {
+					String key = entry.getKey()+ "";
+					String value = entry.getValue();
+					System.out.println(key + " " + value);
+				}
+				if (SetUp.categories.get(getInt(agent.getAID())) == "not set") {
+					System.out.println("ne zahodit v not set");
+					sb.addSubBehaviour(new SendData(agent));
 					pb.addSubBehaviour(new DriverBehaviour(agent));
 					pb.addSubBehaviour(new PassengerBehaviour(agent));
 					sb.addSubBehaviour(pb);
 					addBehaviour(sb);
 				}
-				else if (susanna == "driver" && seats > 0) {
+				else if (SetUp.categories.get(getInt(agent.getAID())) == "driver" && seats > 0) {
+					System.out.println("ne zahodit v driver");
+					sb.addSubBehaviour(new SendData(agent));
 					pb.addSubBehaviour(new DriverBehaviour(agent));
 					sb.addSubBehaviour(pb);
 					addBehaviour(sb);
 				}
+				else {
+					System.out.println(agent.getLocalName() + " лох ");
+					//sb.addSubBehaviour(new SendData(agent));
+					//sb.addSubBehaviour(new Deregister(agent));
+
+					//addBehaviour(sb);
+				}
+			waitOthers(drivers.size());
+				if (SetUp.categories.get(getInt(agent.getAID())) != "passenger")
+			addBehaviour(new Restarter(agent, 10000));
 				cnt++;
+				//waitOthers(drivers.size());
 			}
 		}
 	}
@@ -155,8 +193,24 @@ public class TravellerAgent extends Agent {
 			msg.setConversationId("SendData");
 			for (AID dr : drivers) {
 				msg.addReceiver(dr);
+				System.out.println(dr.getLocalName() + "got message from" + agent.getLocalName());
 			}
 			agent.send(msg);
+
+			//waitOthers(drivers.size());
+		}}
+
+	private class Koko extends OneShotBehaviour{
+		private Agent agent;
+
+
+		public Koko( Agent agent) {
+
+			this.agent = agent;
+		}
+		@Override
+		public void action() {
+			System.out.println("suka blyat");
 		}}
 
 	private double getDist2(List<String> arr){
@@ -210,6 +264,7 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			try {
 				ACLMessage msg = handle.getMessage();
+				System.out.println(msg.getContent() + "huihuihui");
 				if  (msg.getContent() != null) {
 					String[] content = msg.getContent().split(" ");
 					if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
@@ -444,6 +499,7 @@ public class TravellerAgent extends Agent {
 
 		@Override
 		public void action() {
+			System.out.println("zashlo v driver");
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 
 			ParallelBehaviour pb = new ParallelBehaviour();
@@ -467,6 +523,10 @@ public class TravellerAgent extends Agent {
 			waitOthers(drivers.size());
 			sb.addSubBehaviour(new SendAgreeMsgToPass(agent));
 			waitOthers(drivers.size());
+			//addBehaviour(sb);
+			//waitOthers(drivers.size());
+			//System.out.println("dhgdkjhnglkfndl");
+			//sb.addSubBehaviour(new LifeCycle(agent));
 			addBehaviour(sb);
 		}
 	}
@@ -499,6 +559,8 @@ public class TravellerAgent extends Agent {
 			sb.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, (MessageTemplate.MatchConversationId("AgreeForAgree"))));
 			sb.addSubBehaviour(new GetConfirmFromDriver(agent,handle));
 			addBehaviour(sb);
+			//waitOthers(drivers.size());
+			//addBehaviour(new LifeCycle(agent));
 
 		}
 	}
@@ -513,9 +575,9 @@ public class TravellerAgent extends Agent {
 
 		@Override
 		public void action() {
-			susanna = "driver";
+			//susanna = "driver";
 			seats--;
-			System.out.println(agent.getLocalName() + " category changed to " + susanna);
+			//System.out.println(agent.getLocalName() + " category changed to " + susanna);
 			addBehaviour(new WakerBehaviour(agent, 5000) {
 				@Override
 				protected void onWake() {
@@ -543,25 +605,55 @@ public class TravellerAgent extends Agent {
 
 					if (msg.getContent().contains("d")) {
 						System.out.println(agent.getLocalName() + " is driver to " + msg.getSender().getLocalName());
+						//addBehaviour(new Koko(agent));
+						seats--;
+						//addBehaviour(new LifeCycle(agent));
+						//Deregister(GetAgentByAID(msg.getSender().getLocalName()));
+						//RestartLifeCycle(agent);
 						//SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"driver");
 						//SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"passenger");
 					}
 					else {
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
+						//addBehaviour(new Koko(agent));
+						//addBehaviour(new Deregister(agent));
+
+						//RestartLifeCycle(GetAgentByAID(msg.getSender().getLocalName()));
 						//SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"passenger");
 						//SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"driver");
 					}
-					for (Map.Entry<Integer,String> entry : SetUp.categories.entrySet()) {
-						String key = entry.getKey()+ "";
-						String value = entry.getValue();
-						System.out.println(key + " " + value);
-					}
+
 
 				}
 
 			}
 			catch (ReceiverBehaviour.TimedOut timedOut) {}
 			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
+		}
+	}
+	private class Restarter extends WakerBehaviour {
+		public Restarter(Agent a, long timeout) {
+			super(a, timeout);
+		}
+
+		@Override
+		protected void onWake() {
+			System.out.println(myAgent.getLocalName() + ": restart life cycle");
+			addBehaviour(new LifeCycle(myAgent));
+		}
+	}
+	private class Deregister extends OneShotBehaviour {
+		public Deregister (Agent agent) {
+			super(agent);
+		}
+
+		@Override
+		public void action() {
+			try {
+				DFService.deregister(myAgent);
+			} catch (FIPAException fe) {
+				fe.printStackTrace();
+			}
 		}
 	}
 }
