@@ -38,7 +38,9 @@ public class TravellerAgent extends Agent {
 	private double procent = 0.5;
 	private final Lock mutex = new ReentrantLock(true);
 	private Map<AID, String> utilities = new HashMap<>();
-	private boolean kostil ;
+	private int alreadyPassFlag;
+	private int alreadyDriverFlag;
+
 
 
 	private int getInt(AID agent) {
@@ -92,21 +94,7 @@ public class TravellerAgent extends Agent {
 		}
 			@Override
 			public void action() {
-			//super(agent);
-			//SequentialBehaviour sb = new SequentialBehaviour();
-			//sb.addSubBehaviour(new StartCycle(agent, this));
-			//sb.addSubBehaviour(new StartCycle(agent, this));
-			//sb.addSubBehaviour(new StartCycle(agent, this));
-			//addBehaviour(new StartCycle(agent, this));
-			//waitOthers(drivers.size());
 			addBehaviour(new StartCycle(agent, this));
-				//addBehaviour(new Restarter(agent, 10000));
-
-			//while (cnt < maxcnt) {
-				//addBehaviour(new StartCycle(agent, this));
-				//waitOthers(drivers.size());
-				//cnt++;
-			//}
 		}
 	}
 
@@ -132,7 +120,6 @@ public class TravellerAgent extends Agent {
 
 				}
 				possiblePass = null;
-				kostil = false;
 				possibleDriver = null;
 				passPrice = Double.POSITIVE_INFINITY;
 				bestPrice = Double.NEGATIVE_INFINITY;
@@ -150,7 +137,6 @@ public class TravellerAgent extends Agent {
 				} catch (FIPAException fe) {
 					fe.printStackTrace();
 				}
-			//}
 				countOfDrivers = 0;
 				countOfNotSet = 0;
 				for (int i = 0; i < drivers.size(); i++) {
@@ -158,40 +144,36 @@ public class TravellerAgent extends Agent {
 						countOfDrivers++;
 					else if (!(agent.getName().equals(agent.getAID())) && (SetUp.categories.get(getInt(agent.getAID())) == "not set"))
 						countOfNotSet++;
-
-
 				}
 				SequentialBehaviour sb = new SequentialBehaviour(agent);
 				ParallelBehaviour pb = new ParallelBehaviour();
-				//sb.addSubBehaviour(new SendData(agent));
 				waitOthers(drivers.size());
 				System.out.println(agent.getLocalName() + " starting new lifecycle with category " + SetUp.categories.get(getInt(agent.getAID())));
-				System.out.println(drivers.size());
-				System.out.println("");
-				for (String v: way
-					 ) {
-					System.out.print(v);
-				}
-				System.out.println("");
 
-//				for (String v: doyouknowdaWay
-//						) {
-//					System.out.print(v);
-//				}
-//				System.out.println("");
-				int c = 0;
+				alreadyPassFlag = 0;
+				alreadyDriverFlag = 0;
+				String print = "";
+				System.out.println(SetUp.categories.get(getInt(agent.getAID())));
+
 				for (Map.Entry<Integer,String> entry : SetUp.categories.entrySet()) {
-					String key = entry.getKey()+ "";
+					Integer key = entry.getKey();
 					String value = entry.getValue();
-					System.out.println(key + " " + value);
-					if (value == "not set") c +=1;
+					if (value == "passenger") print = print + key + " " + value + " (driver is " + SetUp.choosenDrivers.get(key) + ")\r\n";
+					else print = print + key + " " + value + "\r\n";
+					if (value == "not set") alreadyPassFlag +=1;
+				}
+
+				if (SetUp.forPrint == cnt) {
+					SetUp.forPrint +=1;
+					mutex.lock();
+					System.out.println(print);
+					mutex.unlock();
 				}
 				waitOthers(drivers.size());
-				if (SetUp.categories.get(getInt(agent.getAID())) == "not set" && c == 1) {
+				if (SetUp.categories.get(getInt(agent.getAID())) == "not set" && alreadyPassFlag == 1) {
 					sb.addSubBehaviour(new SendData(agent));
 					pb.addSubBehaviour(new PassengerBehaviour(agent));
 					sb.addSubBehaviour(pb);
-					kostil = true;
 					addBehaviour(sb);
 				}
 
@@ -206,12 +188,12 @@ public class TravellerAgent extends Agent {
 					sb.addSubBehaviour(new SendData(agent));
 					pb.addSubBehaviour(new DriverBehaviour(agent));
 					sb.addSubBehaviour(pb);
+					alreadyDriverFlag = 1;
 					addBehaviour(sb);
 				}
 			waitOthers(drivers.size());
 				if (SetUp.categories.get(getInt(agent.getAID())) != "passenger" && SetUp.categories.values().contains("not set"))addBehaviour(new Restarter(agent, 10000));
 				cnt++;
-				//waitOthers(drivers.size());
 			}
 		}
 	}
@@ -234,12 +216,9 @@ public class TravellerAgent extends Agent {
 				if (SetUp.categories.get(getInt(dr)) != "driver" || SetUp.categories.get(getInt(agent.getAID())) != "driver")
 				{
 					msg.addReceiver(dr);
-					System.out.println(dr.getLocalName() + "got message from" + agent.getLocalName());
 				}
 			}
 			agent.send(msg);
-
-			//waitOthers(drivers.size());
 		}}
 
 	private class Koko extends OneShotBehaviour{
@@ -285,7 +264,7 @@ public class TravellerAgent extends Agent {
 			String tmp = "";
 			for (String w: way2) tmp = tmp + w + " ";
 			msg.setContent(price + " " + utility + "\n" + tmp);
-			if (!(SetUp.categories.get(getInt(sender)) == "driver"))agent.send(msg);
+			agent.send(msg);
 			mutex.lock();
 			System.out.println(agent.getLocalName() + " sends propose = " + price + " to " + sender.getLocalName());
 			mutex.unlock();
@@ -374,8 +353,6 @@ public class TravellerAgent extends Agent {
 						}
 
 					}
-
-					//way = way2;
 				}
 			}
 			catch (ReceiverBehaviour.TimedOut timedOut) { }
@@ -414,12 +391,10 @@ public class TravellerAgent extends Agent {
 					int j = way2.subList(i,way2.size()).indexOf(to);
 					dist2 = getDist2(way2.subList(i, j + 1));
 					driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
-					System.out.print(driverPrice + " " + util);
 
 					if  (driverPrice <= passPrice && util > 0 && !(SetUp.categories.get(getInt(msg.getSender())).contains("passenger")))  {
 						passPrice = driverPrice;
 						possibleDriver = msg.getSender();
-						//doyouknowdaWay = way2;
 					}
 				}
 			}
@@ -451,7 +426,6 @@ public class TravellerAgent extends Agent {
 						rfs.addReceiver(dr);
 						rfs.setConversationId("RefuseForPropose");
 						agent.send(rfs);
-						System.out.println(agent.getAID().getLocalName() + " refuses for propose from " + dr.getLocalName());
 					}
 				}
 			}
@@ -478,13 +452,10 @@ public class TravellerAgent extends Agent {
 			try {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForPropose") {
-
 					price = Double.parseDouble(msg.getContent());
-					System.out.println(SetUp.categories.get(getInt(msg.getSender())));
 					if (price >= bestPrice && !(SetUp.categories.get(getInt(msg.getSender())).contains("driver"))) {
 						bestPrice = price;
 						possiblePass = msg.getSender();
-						System.out.println("dfjgkdjbgfbkfs");
 					}
 				}
 			}
@@ -506,49 +477,36 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			ACLMessage msg = new ACLMessage(ACLMessage.AGREE);
 			if (possiblePass != null) {
-				SetUp.categories.replace(getInt(possiblePass),"tmppassenger");
 
-
-				if (!(SetUp.categories.get(getInt(agent.getAID()))=="driver" || kostil == false )) {
-					System.out.println(possiblePass.getLocalName() + " is " + SetUp.categories.get(getInt(possiblePass)));
-				if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) == Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
-					SetUp.categories.replace(getInt(agent.getAID()),"driver");
-					SetUp.categories.replace(getInt(possiblePass),"passenger");
-					msg.setContent("passenger");
-					msg.addReceiver(possiblePass);
-					msg.setConversationId("AgreeForAgree");
-
-					agent.send(msg);
-					}
-					else {
-						if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) > Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
-							SetUp.categories.replace(getInt(agent.getAID()),"driver"); //not sure about tmp
-							SetUp.categories.replace(getInt(possiblePass),"passenger");
-							msg.setContent("passenger");
-							msg.addReceiver(possiblePass);
-							msg.setConversationId("AgreeForAgree");
-							agent.send(msg);
-						} else {
-							SetUp.categories.replace(getInt(agent.getAID()),"passenger");
-							SetUp.categories.replace(getInt(possiblePass),"driver");
-							msg.setContent("driver");
-							msg.addReceiver(possiblePass);
-							msg.setConversationId("AgreeForAgree");
-							agent.send(msg);
-							//System.out.println((Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) + " " + Double.parseDouble(utilities.get(possiblePass).split(" ")[1])));
-						}
-					}}
-					else {
-					SetUp.categories.replace(getInt(possiblePass),"passenger");
-					msg.setContent("passenger");
-					msg.addReceiver(possiblePass);
-					msg.setConversationId("AgreeForAgree");
-					agent.send(msg);
+				if (alreadyDriverFlag != 1 && alreadyPassFlag != 1) {
+                    if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) == Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
+                        SetUp.categories.replace(getInt(agent.getAID()),"driver");
+                        SetUp.categories.replace(getInt(possiblePass),"passenger");
+                        msg.setContent("passenger");
+                        }
+                    else {
+                        if (Double.parseDouble(utilities.get(possiblePass).split(" ")[0]) > Double.parseDouble(utilities.get(possiblePass).split(" ")[1])) {
+                            SetUp.categories.replace(getInt(agent.getAID()),"driver");
+                            SetUp.categories.replace(getInt(possiblePass),"passenger");
+                            msg.setContent("passenger");
+                        }
+                        else {
+                            SetUp.categories.replace(getInt(agent.getAID()),"passenger");
+                            SetUp.categories.replace(getInt(possiblePass),"driver");
+                            msg.setContent("driver");
+                        }
+                    }
 				}
+                else {
+					SetUp.categories.replace(getInt(agent.getAID()),"driver");
+                	SetUp.categories.replace(getInt(possiblePass),"passenger");
+                	msg.setContent("passenger");
+                }
 
-				//msg.addReceiver(possiblePass);
-				//msg.setConversationId("AgreeForAgree");
-				//agent.send(msg);
+                msg.addReceiver(possiblePass);
+                msg.setConversationId("AgreeForAgree");
+                agent.send(msg);
+
 				mutex.lock();
 				System.out.println(agent.getAID().getLocalName() + " agrees for agree from " + possiblePass.getLocalName());
 				mutex.unlock();
@@ -558,12 +516,11 @@ public class TravellerAgent extends Agent {
 						rfs.addReceiver(dr);
 						rfs.setConversationId("RefuseForAgree");
 						agent.send(rfs);
-
 					}
 				}
-				}
-
-		} }
+            }
+		}
+	}
 
 	private class DriverBehaviour extends OneShotBehaviour {
 
@@ -575,7 +532,6 @@ public class TravellerAgent extends Agent {
 
 		@Override
 		public void action() {
-			System.out.println("zashlo v driver");
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 
 			ParallelBehaviour pb = new ParallelBehaviour();
@@ -589,7 +545,7 @@ public class TravellerAgent extends Agent {
 			sb.addSubBehaviour(pb);
 			ParallelBehaviour pb2 = new ParallelBehaviour();
 			for (AID dr : drivers) {
-				SequentialBehaviour handleMsg2 = new SequentialBehaviour(agent);////все переименовать и это будет другой класс
+				SequentialBehaviour handleMsg2 = new SequentialBehaviour(agent);
 				final ReceiverBehaviour.Handle handle2 = ReceiverBehaviour.newHandle();
 				handleMsg2.addSubBehaviour(new ReceiverBehaviour(agent, handle2, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("AgreeForPropose")))));
 				handleMsg2.addSubBehaviour(new GetBestPass(agent, dr, handle2));
@@ -604,10 +560,6 @@ public class TravellerAgent extends Agent {
 
 			if (cnt == 0) waitOthers(drivers.size());
 			else waitOthers(countOfDrivers);
-			//addBehaviour(sb);
-			//waitOthers(drivers.size());
-			//System.out.println("dhgdkjhnglkfndl");
-			//sb.addSubBehaviour(new LifeCycle(agent));
 			addBehaviour(sb);
 		}
 	}
@@ -622,7 +574,6 @@ public class TravellerAgent extends Agent {
 
 		@Override
 		public void action() {
-			System.out.println("zashlo v passenger");
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 
 			ParallelBehaviour pb = new ParallelBehaviour();
@@ -646,8 +597,6 @@ public class TravellerAgent extends Agent {
 			sb.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, (MessageTemplate.MatchConversationId("AgreeForAgree"))));
 			sb.addSubBehaviour(new GetConfirmFromDriver(agent,handle));
 			addBehaviour(sb);
-			//waitOthers(drivers.size());
-			//addBehaviour(new LifeCycle(agent));
 
 		}
 	}
@@ -662,9 +611,7 @@ public class TravellerAgent extends Agent {
 
 		@Override
 		public void action() {
-			//susanna = "driver";
 			seats--;
-			//System.out.println(agent.getLocalName() + " category changed to " + susanna);
 			addBehaviour(new WakerBehaviour(agent, 5000) {
 				@Override
 				protected void onWake() {
@@ -689,29 +636,18 @@ public class TravellerAgent extends Agent {
 			try {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForAgree") {
-					System.out.println(msg.getContent());
 					if (msg.getContent().contains("d")) {
+						SetUp.choosenDrivers.put(getInt(msg.getSender()),agent.getLocalName());
 						mutex.lock();
 						System.out.println(agent.getLocalName() + " is driver to " + msg.getSender().getLocalName());
 						mutex.unlock();
-						//addBehaviour(new Koko(agent));
 						seats--;
-						//addBehaviour(new LifeCycle(agent));
-						//Deregister(GetAgentByAID(msg.getSender().getLocalName()));
-						//RestartLifeCycle(agent);
-						//SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"driver");
-						//SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"passenger");
 					}
 					else {
+						SetUp.choosenDrivers.put(getInt(agent.getAID()),msg.getSender().getLocalName());
 						mutex.lock();
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
 						mutex.unlock();
-						//addBehaviour(new Koko(agent));
-						//addBehaviour(new Deregister(agent));
-
-						//RestartLifeCycle(GetAgentByAID(msg.getSender().getLocalName()));
-						//SetUp.categories.replace(Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", "")),"passenger");
-						//SetUp.categories.replace(Integer.parseInt(msg.getSender().getLocalName().replaceAll("[\\D]", "")),"driver");
 					}
 
 

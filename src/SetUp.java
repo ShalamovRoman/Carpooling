@@ -19,8 +19,11 @@ public class SetUp extends Agent {
 
 	public static List<CyclicBarrier> b = new ArrayList<>();
 	public static Map<Integer, String> categories = new HashMap<Integer, String>();
+	public static int forPrint;
+    public static Map<Integer, String> choosenDrivers = new HashMap<Integer, String>();
 	protected void setup() {
 
+		forPrint = 0;
 		graph.addVertex("A");
 		graph.addVertex("B");
 		graph.addVertex("C");
@@ -42,11 +45,11 @@ public class SetUp extends Agent {
 		//graphMatrix = new FloydWarshallShortestPaths(graph);
 		graphMatrix = new DijkstraShortestPath(graph);
 		String line = "A F 4\n" +
-//				"A F 4\n" +
-//				"A E 4\n" +
-//				"B G 4\n" +
-				"A F 4\n" +
-				"A F 4\n";
+				"D E 4\n" +
+				"A E 4\n" +
+				"B G 4\n" +
+				"E D 4\n" +
+				"A G 4\n";
 		String[] data = line.split("\n");
 		for (int i = 1; i <= data.length; i++) {
 			b.add(new CyclicBarrier(i));
