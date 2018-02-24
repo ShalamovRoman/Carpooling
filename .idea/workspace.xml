@@ -2,30 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9db72ec7-d6d0-40eb-9db0-f104be71284b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/APDescription.txt" afterPath="$PROJECT_DIR$/APDescription.txt" />
-      <change beforePath="$PROJECT_DIR$/MTPs-Main-Container.txt" afterPath="$PROJECT_DIR$/MTPs-Main-Container.txt" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/SetUp.class" afterPath="$PROJECT_DIR$/out/production/Tachki/SetUp.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory$1.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory$1.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Deregister.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Deregister.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$DriverBehaviour.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$DriverBehaviour.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetBestPass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetBestPass.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetConfirmFromDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetConfirmFromDriver.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossibleDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossibleDriver.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossiblePass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossiblePass.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Koko.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Koko.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$LifeCycle.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$LifeCycle.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$PassengerBehaviour.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$PassengerBehaviour.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Restarter.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Restarter.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendAgreeMsgToPass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendAgreeMsgToPass.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendData.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendData.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendMsgToDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendMsgToDriver.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$StartCycle.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$StartCycle.class" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent.class" />
-      <change beforePath="$PROJECT_DIR$/src/SetUp.java" afterPath="$PROJECT_DIR$/src/SetUp.java" />
-      <change beforePath="$PROJECT_DIR$/src/TravellerAgent.java" afterPath="$PROJECT_DIR$/src/TravellerAgent.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -72,7 +49,7 @@
         <entry file="file://$PROJECT_DIR$/src/TravellerAgent.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="406">
-              <caret line="174" column="47" lean-forward="false" selection-start-line="174" selection-start-column="47" selection-end-line="174" selection-end-column="47" />
+              <caret line="174" column="47" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="685" selection-end-column="1" />
               <folding>
                 <element signature="e#2746#2747#0" expanded="true" />
                 <element signature="e#2773#2774#0" expanded="true" />
@@ -357,12 +334,12 @@
       <workItem from="1519082499297" duration="19655000" />
       <workItem from="1519224807952" duration="10982000" />
       <workItem from="1519415335314" duration="13463000" />
-      <workItem from="1519476065934" duration="7535000" />
+      <workItem from="1519476065934" duration="8000000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="244163000" />
+    <option name="totallyTimeSpent" value="244628000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
@@ -721,7 +698,7 @@
     <entry file="file://$PROJECT_DIR$/src/TravellerAgent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="406">
-          <caret line="174" column="47" lean-forward="false" selection-start-line="174" selection-start-column="47" selection-end-line="174" selection-end-column="47" />
+          <caret line="174" column="47" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="685" selection-end-column="1" />
           <folding>
             <element signature="e#2746#2747#0" expanded="true" />
             <element signature="e#2773#2774#0" expanded="true" />
