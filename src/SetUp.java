@@ -42,11 +42,11 @@ public class SetUp extends Agent {
 		//graphMatrix = new FloydWarshallShortestPaths(graph);
 		graphMatrix = new DijkstraShortestPath(graph);
 		String line = "A F 4\n" +
-				"D E 4\n" +
-				"A E 4\n" +
-				"B G 4\n" +
-				"E D 4\n" +
-				"A G 4\n";
+//				"A F 4\n" +
+//				"A E 4\n" +
+//				"B G 4\n" +
+				"A F 4\n" +
+				"A F 4\n";
 		String[] data = line.split("\n");
 		for (int i = 1; i <= data.length; i++) {
 			b.add(new CyclicBarrier(i));
