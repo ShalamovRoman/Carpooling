@@ -35,16 +35,25 @@ public class TravellerAgent extends Agent {
 	private List<String> doyouknowdaWay = new ArrayList<>();
 	private double passPrice;
 	private double driverPrice = 1000000000;
-	private double procent = 0.5;
+	private double procent = 0.7;
 	private final Lock mutex = new ReentrantLock(true);
 	private Map<AID, String> utilities = new HashMap<>();
 	private int alreadyPassFlag;
 	private int alreadyDriverFlag;
 
-
-
 	private int getInt(AID agent) {
 		return Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", ""));
+	}
+	private boolean canBeDriver(AID agent) {
+		if (SetUp.possibleCompanions[getInt(agent)] == true) return true;
+		else return false;
+	}
+	private boolean canBePass(AID agent) {
+		boolean res = false;
+		for (int i = 0; i < SetUp.possibleCompanions.length; i++) {
+			if (i != getInt(agent) && SetUp.possibleCompanions[i] == true) res = true;
+		}
+		return res;
 	}
 	private void waitOthers(int i) {
 		try {
@@ -119,6 +128,8 @@ public class TravellerAgent extends Agent {
 					if (value.contains("tmp")) SetUp.categories.replace(key, "not set");
 
 				}
+				procent = procent - 0.1;
+				if (procent == 0.2) SetUp.possibleCompanions[getInt(agent.getAID())] = false;
 				possiblePass = null;
 				possibleDriver = null;
 				passPrice = Double.POSITIVE_INFINITY;
@@ -170,21 +181,21 @@ public class TravellerAgent extends Agent {
 					mutex.unlock();
 				}
 				waitOthers(drivers.size());
-				if (SetUp.categories.get(getInt(agent.getAID())) == "not set" && alreadyPassFlag == 1) {
+				if (SetUp.categories.get(getInt(agent.getAID())) == "not set" && alreadyPassFlag == 1 && canBePass(agent.getAID())) {
 					sb.addSubBehaviour(new SendData(agent));
 					pb.addSubBehaviour(new PassengerBehaviour(agent));
 					sb.addSubBehaviour(pb);
 					addBehaviour(sb);
 				}
 
-				else if (SetUp.categories.get(getInt(agent.getAID())) == "not set") {
+				else if (SetUp.categories.get(getInt(agent.getAID())) == "not set" && canBePass(agent.getAID()) && canBeDriver(agent.getAID())) {
 					sb.addSubBehaviour(new SendData(agent));
 					pb.addSubBehaviour(new DriverBehaviour(agent));
 					pb.addSubBehaviour(new PassengerBehaviour(agent));
 					sb.addSubBehaviour(pb);
 					addBehaviour(sb);
 				}
-				else if (SetUp.categories.get(getInt(agent.getAID())) == "driver" && seats > 0) {
+				else if (SetUp.categories.get(getInt(agent.getAID())) == "driver" && seats > 0 && canBeDriver(agent.getAID())) {
 					sb.addSubBehaviour(new SendData(agent));
 					pb.addSubBehaviour(new DriverBehaviour(agent));
 					sb.addSubBehaviour(pb);
@@ -429,7 +440,8 @@ public class TravellerAgent extends Agent {
 					}
 				}
 			}
-		} }
+		}
+	}
 
 	private class GetBestPass extends OneShotBehaviour {
 		private ReceiverBehaviour.Handle handle;

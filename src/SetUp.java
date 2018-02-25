@@ -21,8 +21,8 @@ public class SetUp extends Agent {
 	public static Map<Integer, String> categories = new HashMap<Integer, String>();
 	public static int forPrint;
     public static Map<Integer, String> choosenDrivers = new HashMap<Integer, String>();
+    public static  Boolean[] possibleCompanions ;
 	protected void setup() {
-
 		forPrint = 0;
 		graph.addVertex("A");
 		graph.addVertex("B");
@@ -54,6 +54,8 @@ public class SetUp extends Agent {
 		for (int i = 1; i <= data.length; i++) {
 			b.add(new CyclicBarrier(i));
 		}
+		possibleCompanions= new Boolean[data.length];
+		Arrays.fill(possibleCompanions, Boolean.TRUE);
 		for (int i = 0; i < data.length; i++) {
 			try {
 				String[] info = data[i].split(" ");
