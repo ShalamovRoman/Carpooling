@@ -3,27 +3,21 @@
   <component name="ChangeListManager">
     <list default="true" id="9db72ec7-d6d0-40eb-9db0-f104be71284b" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/APDescription.txt" afterPath="$PROJECT_DIR$/APDescription.txt" />
       <change beforePath="$PROJECT_DIR$/MTPs-Main-Container.txt" afterPath="$PROJECT_DIR$/MTPs-Main-Container.txt" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/SetUp.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$1.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory$1.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$ChangeDriverCategory.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Deregister.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$DriverBehaviour.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetBestPass.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetConfirmFromDriver.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossibleDriver.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossiblePass.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Koko.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$LifeCycle.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$PassengerBehaviour.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Restarter.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendAgreeMsgToPass.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendData.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendMsgToDriver.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$StartCycle.class" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent.class" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$DriverBehaviour.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$DriverBehaviour.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetBestPass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetBestPass.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetConfirmFromDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetConfirmFromDriver.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossibleDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossibleDriver.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossiblePass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$GetPossiblePass.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$PassengerBehaviour.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$PassengerBehaviour.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$Restart.class" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendAgreeMsgToPass.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendAgreeMsgToPass.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendData.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendData.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendMsgToDriver.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$SendMsgToDriver.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$StartCycle.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent$StartCycle.class" />
+      <change beforePath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent.class" afterPath="$PROJECT_DIR$/out/production/Tachki/TravellerAgent.class" />
       <change beforePath="$PROJECT_DIR$/src/SetUp.java" afterPath="$PROJECT_DIR$/src/SetUp.java" />
       <change beforePath="$PROJECT_DIR$/src/TravellerAgent.java" afterPath="$PROJECT_DIR$/src/TravellerAgent.java" />
     </list>
@@ -59,10 +53,11 @@
       <file leaf-file-name="SetUp.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/SetUp.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="20" column="29" lean-forward="true" selection-start-line="20" selection-start-column="29" selection-end-line="20" selection-end-column="29" />
+            <state relative-caret-position="635">
+              <caret line="87" column="0" lean-forward="false" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <marker date="1519690013735" expanded="true" signature="2935:3407" ph="{...}" />
               </folding>
             </state>
           </provider>
@@ -71,27 +66,33 @@
       <file leaf-file-name="TravellerAgent.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/TravellerAgent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="307">
-              <caret line="153" column="80" lean-forward="false" selection-start-line="153" selection-start-column="80" selection-end-line="153" selection-end-column="80" />
+            <state relative-caret-position="136">
+              <caret line="122" column="102" lean-forward="false" selection-start-line="122" selection-start-column="102" selection-end-line="122" selection-end-column="102" />
               <folding>
-                <element signature="method#canBePass#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="method#waitOthers#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="method#setup#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#LifeCycle#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#SendData#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="method#getDist2#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#GetPossiblePass#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#GetPossibleDriver#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#SendMsgToDriver#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="e#14339#14340#0" expanded="true" />
-                <element signature="e#14366#14367#0" expanded="true" />
-                <element signature="class#GetBestPass#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#SendAgreeMsgToPass#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="e#15982#15983#0" expanded="true" />
-                <element signature="e#16009#16010#0" expanded="true" />
-                <element signature="class#DriverBehaviour#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#GetConfirmFromDriver#0;class#TravellerAgent#0" expanded="false" />
-                <element signature="class#Restart#0;class#TravellerAgent#0" expanded="false" />
+                <element signature="e#1423#1424#0" expanded="true" />
+                <element signature="e#1499#1500#0" expanded="true" />
+                <element signature="e#2902#2903#0" expanded="true" />
+                <element signature="e#2949#2950#0" expanded="true" />
+                <element signature="e#3069#3070#0" expanded="true" />
+                <element signature="e#3096#3097#0" expanded="true" />
+                <element signature="e#3133#3134#0" expanded="true" />
+                <element signature="e#3183#3184#0" expanded="true" />
+                <element signature="e#8570#8571#0" expanded="true" />
+                <element signature="e#8611#8612#0" expanded="true" />
+                <element signature="e#15270#15271#0" expanded="true" />
+                <element signature="e#15297#15298#0" expanded="true" />
+                <element signature="e#16967#16968#0" expanded="true" />
+                <element signature="e#16994#16995#0" expanded="true" />
+                <element signature="e#18759#18760#0" expanded="true" />
+                <element signature="e#18786#18787#0" expanded="true" />
+                <element signature="e#20354#20355#0" expanded="true" />
+                <element signature="e#20381#20382#0" expanded="true" />
+                <element signature="e#21666#21667#0" expanded="true" />
+                <element signature="e#21693#21694#0" expanded="true" />
+                <element signature="e#23313#23314#0" expanded="true" />
+                <element signature="e#23339#23340#0" expanded="true" />
+                <element signature="e#23589#23590#0" expanded="true" />
+                <element signature="e#23610#23611#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -108,18 +109,12 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>sender</find>
-      <find>waitOthers</find>
-      <find>Propose</find>
-      <find>AgreeForPropose</find>
-      <find>driverPrice</find>
       <find>susanna</find>
       <find>AgreeForAgree</find>
       <find>Dere</find>
       <find>is driver to</find>
       <find>PassengerBe</find>
       <find>possibleDriver</find>
-      <find>wait</find>
       <find>way</find>
       <find>tmpdriver</find>
       <find>utilities</find>
@@ -138,6 +133,12 @@
       <find>sends</find>
       <find>System.out.pr</find>
       <find>c</find>
+      <find>wait</find>
+      <find>5000</find>
+      <find>agrees</find>
+      <find>SendA</find>
+      <find>agre</find>
+      <find>SendM</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -188,10 +189,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="AndroidView" />
       <pane id="PackagesPane" />
-      <pane id="Scratches" />
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -208,6 +206,9 @@
           <select />
         </subPane>
       </pane>
+      <pane id="AndroidView" />
+      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -365,32 +366,31 @@
       <workItem from="1519584093599" duration="1287000" />
       <workItem from="1519617210681" duration="329000" />
       <workItem from="1519633880963" duration="7124000" />
+      <workItem from="1519673166483" duration="7418000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="257225000" />
+    <option name="totallyTimeSpent" value="264643000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1096" extended-state="6" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36574584" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36474165" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09375" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.6028369" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32894737" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.102118" sideWeight="0.5" order="4" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.10208333" sideWeight="0.5" order="4" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980332" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2587646" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -403,6 +403,7 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980332" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2587646" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -453,24 +454,30 @@
         <state relative-caret-position="1598">
           <caret line="159" column="41" lean-forward="false" selection-start-line="159" selection-start-column="41" selection-end-line="159" selection-end-column="41" />
           <folding>
-            <element signature="method#canBePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#waitOthers#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#setup#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#LifeCycle#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendData#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#getDist2#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossiblePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossibleDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendMsgToDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#14339#14340#0" expanded="true" />
-            <element signature="e#14366#14367#0" expanded="true" />
-            <element signature="class#GetBestPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendAgreeMsgToPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#15982#15983#0" expanded="true" />
-            <element signature="e#16009#16010#0" expanded="true" />
-            <element signature="class#DriverBehaviour#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetConfirmFromDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#Restart#0;class#TravellerAgent#0" expanded="false" />
+            <element signature="e#1423#1424#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#2902#2903#0" expanded="true" />
+            <element signature="e#2949#2950#0" expanded="true" />
+            <element signature="e#3069#3070#0" expanded="true" />
+            <element signature="e#3096#3097#0" expanded="true" />
+            <element signature="e#3133#3134#0" expanded="true" />
+            <element signature="e#3183#3184#0" expanded="true" />
+            <element signature="e#8570#8571#0" expanded="true" />
+            <element signature="e#8611#8612#0" expanded="true" />
+            <element signature="e#15270#15271#0" expanded="true" />
+            <element signature="e#15297#15298#0" expanded="true" />
+            <element signature="e#16967#16968#0" expanded="true" />
+            <element signature="e#16994#16995#0" expanded="true" />
+            <element signature="e#18759#18760#0" expanded="true" />
+            <element signature="e#18786#18787#0" expanded="true" />
+            <element signature="e#20354#20355#0" expanded="true" />
+            <element signature="e#20381#20382#0" expanded="true" />
+            <element signature="e#21666#21667#0" expanded="true" />
+            <element signature="e#21693#21694#0" expanded="true" />
+            <element signature="e#23313#23314#0" expanded="true" />
+            <element signature="e#23339#23340#0" expanded="true" />
+            <element signature="e#23589#23590#0" expanded="true" />
+            <element signature="e#23610#23611#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -489,6 +496,7 @@
           <caret line="59" column="0" lean-forward="true" selection-start-line="59" selection-start-column="0" selection-end-line="59" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <marker date="1519690013735" expanded="true" signature="2935:3407" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -498,24 +506,30 @@
         <state relative-caret-position="2703">
           <caret line="159" column="41" lean-forward="true" selection-start-line="159" selection-start-column="41" selection-end-line="159" selection-end-column="41" />
           <folding>
-            <element signature="method#canBePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#waitOthers#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#setup#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#LifeCycle#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendData#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#getDist2#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossiblePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossibleDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendMsgToDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#14339#14340#0" expanded="true" />
-            <element signature="e#14366#14367#0" expanded="true" />
-            <element signature="class#GetBestPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendAgreeMsgToPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#15982#15983#0" expanded="true" />
-            <element signature="e#16009#16010#0" expanded="true" />
-            <element signature="class#DriverBehaviour#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetConfirmFromDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#Restart#0;class#TravellerAgent#0" expanded="false" />
+            <element signature="e#1423#1424#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#2902#2903#0" expanded="true" />
+            <element signature="e#2949#2950#0" expanded="true" />
+            <element signature="e#3069#3070#0" expanded="true" />
+            <element signature="e#3096#3097#0" expanded="true" />
+            <element signature="e#3133#3134#0" expanded="true" />
+            <element signature="e#3183#3184#0" expanded="true" />
+            <element signature="e#8570#8571#0" expanded="true" />
+            <element signature="e#8611#8612#0" expanded="true" />
+            <element signature="e#15270#15271#0" expanded="true" />
+            <element signature="e#15297#15298#0" expanded="true" />
+            <element signature="e#16967#16968#0" expanded="true" />
+            <element signature="e#16994#16995#0" expanded="true" />
+            <element signature="e#18759#18760#0" expanded="true" />
+            <element signature="e#18786#18787#0" expanded="true" />
+            <element signature="e#20354#20355#0" expanded="true" />
+            <element signature="e#20381#20382#0" expanded="true" />
+            <element signature="e#21666#21667#0" expanded="true" />
+            <element signature="e#21693#21694#0" expanded="true" />
+            <element signature="e#23313#23314#0" expanded="true" />
+            <element signature="e#23339#23340#0" expanded="true" />
+            <element signature="e#23589#23590#0" expanded="true" />
+            <element signature="e#23610#23611#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -534,6 +548,7 @@
           <caret line="53" column="0" lean-forward="true" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <marker date="1519690013735" expanded="true" signature="2935:3407" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -543,24 +558,30 @@
         <state relative-caret-position="2023">
           <caret line="119" column="43" lean-forward="true" selection-start-line="119" selection-start-column="43" selection-end-line="119" selection-end-column="43" />
           <folding>
-            <element signature="method#canBePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#waitOthers#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#setup#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#LifeCycle#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendData#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#getDist2#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossiblePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossibleDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendMsgToDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#14339#14340#0" expanded="true" />
-            <element signature="e#14366#14367#0" expanded="true" />
-            <element signature="class#GetBestPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendAgreeMsgToPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#15982#15983#0" expanded="true" />
-            <element signature="e#16009#16010#0" expanded="true" />
-            <element signature="class#DriverBehaviour#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetConfirmFromDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#Restart#0;class#TravellerAgent#0" expanded="false" />
+            <element signature="e#1423#1424#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#2902#2903#0" expanded="true" />
+            <element signature="e#2949#2950#0" expanded="true" />
+            <element signature="e#3069#3070#0" expanded="true" />
+            <element signature="e#3096#3097#0" expanded="true" />
+            <element signature="e#3133#3134#0" expanded="true" />
+            <element signature="e#3183#3184#0" expanded="true" />
+            <element signature="e#8570#8571#0" expanded="true" />
+            <element signature="e#8611#8612#0" expanded="true" />
+            <element signature="e#15270#15271#0" expanded="true" />
+            <element signature="e#15297#15298#0" expanded="true" />
+            <element signature="e#16967#16968#0" expanded="true" />
+            <element signature="e#16994#16995#0" expanded="true" />
+            <element signature="e#18759#18760#0" expanded="true" />
+            <element signature="e#18786#18787#0" expanded="true" />
+            <element signature="e#20354#20355#0" expanded="true" />
+            <element signature="e#20381#20382#0" expanded="true" />
+            <element signature="e#21666#21667#0" expanded="true" />
+            <element signature="e#21693#21694#0" expanded="true" />
+            <element signature="e#23313#23314#0" expanded="true" />
+            <element signature="e#23339#23340#0" expanded="true" />
+            <element signature="e#23589#23590#0" expanded="true" />
+            <element signature="e#23610#23611#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -571,6 +592,7 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <marker date="1519690013735" expanded="true" signature="2935:3407" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -580,24 +602,30 @@
         <state relative-caret-position="187">
           <caret line="15" column="44" lean-forward="false" selection-start-line="15" selection-start-column="44" selection-end-line="15" selection-end-column="44" />
           <folding>
-            <element signature="method#canBePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#waitOthers#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#setup#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#LifeCycle#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendData#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#getDist2#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossiblePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossibleDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendMsgToDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#14339#14340#0" expanded="true" />
-            <element signature="e#14366#14367#0" expanded="true" />
-            <element signature="class#GetBestPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendAgreeMsgToPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#15982#15983#0" expanded="true" />
-            <element signature="e#16009#16010#0" expanded="true" />
-            <element signature="class#DriverBehaviour#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetConfirmFromDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#Restart#0;class#TravellerAgent#0" expanded="false" />
+            <element signature="e#1423#1424#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#2902#2903#0" expanded="true" />
+            <element signature="e#2949#2950#0" expanded="true" />
+            <element signature="e#3069#3070#0" expanded="true" />
+            <element signature="e#3096#3097#0" expanded="true" />
+            <element signature="e#3133#3134#0" expanded="true" />
+            <element signature="e#3183#3184#0" expanded="true" />
+            <element signature="e#8570#8571#0" expanded="true" />
+            <element signature="e#8611#8612#0" expanded="true" />
+            <element signature="e#15270#15271#0" expanded="true" />
+            <element signature="e#15297#15298#0" expanded="true" />
+            <element signature="e#16967#16968#0" expanded="true" />
+            <element signature="e#16994#16995#0" expanded="true" />
+            <element signature="e#18759#18760#0" expanded="true" />
+            <element signature="e#18786#18787#0" expanded="true" />
+            <element signature="e#20354#20355#0" expanded="true" />
+            <element signature="e#20381#20382#0" expanded="true" />
+            <element signature="e#21666#21667#0" expanded="true" />
+            <element signature="e#21693#21694#0" expanded="true" />
+            <element signature="e#23313#23314#0" expanded="true" />
+            <element signature="e#23339#23340#0" expanded="true" />
+            <element signature="e#23589#23590#0" expanded="true" />
+            <element signature="e#23610#23611#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -618,6 +646,7 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <marker date="1519690013735" expanded="true" signature="2935:3407" ph="{...}" />
           </folding>
         </state>
       </provider>
@@ -630,24 +659,30 @@
         <state relative-caret-position="51">
           <caret line="7" column="0" lean-forward="true" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
           <folding>
-            <element signature="method#canBePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#waitOthers#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#setup#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#LifeCycle#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendData#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#getDist2#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossiblePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossibleDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendMsgToDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#14339#14340#0" expanded="true" />
-            <element signature="e#14366#14367#0" expanded="true" />
-            <element signature="class#GetBestPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendAgreeMsgToPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#15982#15983#0" expanded="true" />
-            <element signature="e#16009#16010#0" expanded="true" />
-            <element signature="class#DriverBehaviour#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetConfirmFromDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#Restart#0;class#TravellerAgent#0" expanded="false" />
+            <element signature="e#1423#1424#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#2902#2903#0" expanded="true" />
+            <element signature="e#2949#2950#0" expanded="true" />
+            <element signature="e#3069#3070#0" expanded="true" />
+            <element signature="e#3096#3097#0" expanded="true" />
+            <element signature="e#3133#3134#0" expanded="true" />
+            <element signature="e#3183#3184#0" expanded="true" />
+            <element signature="e#8570#8571#0" expanded="true" />
+            <element signature="e#8611#8612#0" expanded="true" />
+            <element signature="e#15270#15271#0" expanded="true" />
+            <element signature="e#15297#15298#0" expanded="true" />
+            <element signature="e#16967#16968#0" expanded="true" />
+            <element signature="e#16994#16995#0" expanded="true" />
+            <element signature="e#18759#18760#0" expanded="true" />
+            <element signature="e#18786#18787#0" expanded="true" />
+            <element signature="e#20354#20355#0" expanded="true" />
+            <element signature="e#20381#20382#0" expanded="true" />
+            <element signature="e#21666#21667#0" expanded="true" />
+            <element signature="e#21693#21694#0" expanded="true" />
+            <element signature="e#23313#23314#0" expanded="true" />
+            <element signature="e#23339#23340#0" expanded="true" />
+            <element signature="e#23589#23590#0" expanded="true" />
+            <element signature="e#23610#23611#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -699,37 +734,44 @@
     <entry file="file://$USER_HOME$/Downloads/Tachki-master/Tachki-master/src/SetUp.java" />
     <entry file="file://$PROJECT_DIR$/src/SetUp.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="20" column="29" lean-forward="true" selection-start-line="20" selection-start-column="29" selection-end-line="20" selection-end-column="29" />
+        <state relative-caret-position="635">
+          <caret line="87" column="0" lean-forward="false" selection-start-line="87" selection-start-column="0" selection-end-line="87" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <marker date="1519690013735" expanded="true" signature="2935:3407" ph="{...}" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TravellerAgent.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="153" column="80" lean-forward="false" selection-start-line="153" selection-start-column="80" selection-end-line="153" selection-end-column="80" />
+        <state relative-caret-position="136">
+          <caret line="122" column="102" lean-forward="false" selection-start-line="122" selection-start-column="102" selection-end-line="122" selection-end-column="102" />
           <folding>
-            <element signature="method#canBePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#waitOthers#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#setup#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#LifeCycle#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendData#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="method#getDist2#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossiblePass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetPossibleDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendMsgToDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#14339#14340#0" expanded="true" />
-            <element signature="e#14366#14367#0" expanded="true" />
-            <element signature="class#GetBestPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#SendAgreeMsgToPass#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="e#15982#15983#0" expanded="true" />
-            <element signature="e#16009#16010#0" expanded="true" />
-            <element signature="class#DriverBehaviour#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#GetConfirmFromDriver#0;class#TravellerAgent#0" expanded="false" />
-            <element signature="class#Restart#0;class#TravellerAgent#0" expanded="false" />
+            <element signature="e#1423#1424#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#2902#2903#0" expanded="true" />
+            <element signature="e#2949#2950#0" expanded="true" />
+            <element signature="e#3069#3070#0" expanded="true" />
+            <element signature="e#3096#3097#0" expanded="true" />
+            <element signature="e#3133#3134#0" expanded="true" />
+            <element signature="e#3183#3184#0" expanded="true" />
+            <element signature="e#8570#8571#0" expanded="true" />
+            <element signature="e#8611#8612#0" expanded="true" />
+            <element signature="e#15270#15271#0" expanded="true" />
+            <element signature="e#15297#15298#0" expanded="true" />
+            <element signature="e#16967#16968#0" expanded="true" />
+            <element signature="e#16994#16995#0" expanded="true" />
+            <element signature="e#18759#18760#0" expanded="true" />
+            <element signature="e#18786#18787#0" expanded="true" />
+            <element signature="e#20354#20355#0" expanded="true" />
+            <element signature="e#20381#20382#0" expanded="true" />
+            <element signature="e#21666#21667#0" expanded="true" />
+            <element signature="e#21693#21694#0" expanded="true" />
+            <element signature="e#23313#23314#0" expanded="true" />
+            <element signature="e#23339#23340#0" expanded="true" />
+            <element signature="e#23589#23590#0" expanded="true" />
+            <element signature="e#23610#23611#0" expanded="true" />
           </folding>
         </state>
       </provider>
