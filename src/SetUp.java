@@ -13,7 +13,7 @@ public class SetUp extends Agent {
     private static SimpleWeightedGraph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
     public static DijkstraShortestPath graphMatrix;
     public static List<CyclicBarrier> b = new ArrayList<>();
-    public static Map<Integer, String> categories = new HashMap< >();
+   // public static Map<Integer, String> categories = new HashMap< >();
     public static int forPrint;
     public static Map<Integer, String> chooseDrivers = new HashMap<>();
     public static  Double[] percents;
@@ -65,11 +65,10 @@ public class SetUp extends Agent {
         Arrays.fill(percents, 0.6);
         for (int i = 0; i < AgentsInfo.length; i++) {
             try {
-                String[] info = (AgentsInfo[i] + " not set").split(" ");
+                String[] info = (AgentsInfo[i]).split(" ");
                 AgentController traveler = controller.createNewAgent("Traveller_" + i
                         , TravellerAgent.class.getName(), info);;
                 traveler.start();
-                categories.put(i, "not set");
 
             }
             catch (ControllerException ex) {

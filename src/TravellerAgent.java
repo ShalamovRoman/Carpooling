@@ -34,6 +34,11 @@ public class TravellerAgent extends Agent {
 	private double driverPrice = Double.POSITIVE_INFINITY;
 	private final Lock mutex = new ReentrantLock(true);
 	private boolean aloneFlag = false;
+	private String category = "not set";
+	private DFAgentDescription agentDescription = new DFAgentDescription();
+	private ServiceDescription serviceDescription = new ServiceDescription();
+	private ServiceDescription categoryService = new ServiceDescription();
+	private Map<AID, String> categories = new HashMap< >();
 
 	private int getInt(AID agent) {
 		return Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", ""));
@@ -70,20 +75,25 @@ public class TravellerAgent extends Agent {
 		catch (InterruptedException e) {}
 		catch (BrokenBarrierException e) {}
 	}
-	private void setCategory(DFAgentDescription agentDescription, String type, String oldType){
-		ServiceDescription category = new ServiceDescription();
-		category.setType(oldType);
-		category.setName(oldType);
-		category.setType(type);
-		category.setName(type);
-		agentDescription.addServices(category);
+	private void setCategory(Agent agent, AID aid, String type){
+		DFAgentDescription ad = new DFAgentDescription();
+		ad.setName(aid);
+		ad.addServices(serviceDescription);
+		categoryService.setName(type);
+		ad.addServices(categoryService);
+		try {
+			DFService.modify(agent,ad);
+		} catch (FIPAException e) {
+			e.printStackTrace();
+		}
 	}
 	private String search (Agent agent, AID aid, String type){
 		String c = "not found";
 		DFAgentDescription template = new DFAgentDescription();
-		ServiceDescription serviceDescription = new ServiceDescription();
-		serviceDescription.setType(type);
-		template.addServices(serviceDescription);
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("category");
+		sd.setName(type);
+		template.addServices(sd);
 		try {
 			DFAgentDescription[] result = DFService.search(agent, template);
 			for (int i = 0; i < result.length; i++) {
@@ -106,6 +116,21 @@ public class TravellerAgent extends Agent {
 		if (c=="not found") c = search(agent,aid,"alone");
 		return c;
 	}
+	private void collectCategories(Agent agent) {
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("category");
+		template.addServices(sd);
+		try {
+			DFAgentDescription[] agents = DFService.search(agent, template);
+			for (DFAgentDescription a : agents) {
+				if (categories.containsKey(a)) categories.replace(a.getName(),getCategory(agent,a.getName()));
+				else categories.put(a.getName(),getCategory(agent,a.getName()));
+			}
+		}
+		catch (FIPAException fe) {}
+
+	}
 
 	protected void setup() {
 		Object[] args = getArguments();
@@ -119,18 +144,23 @@ public class TravellerAgent extends Agent {
 		System.out.println(getAID().getLocalName() + ": from " + from + " to " + to + ", " + seats + " free seats, dist = " + dist);
 		mutex.unlock();
 
-		DFAgentDescription agentDescription = new DFAgentDescription();
+
 		agentDescription.setName(getAID());
-		ServiceDescription serviceDescription = new ServiceDescription();
 		serviceDescription.setType("Tachki");
 		serviceDescription.setName("TachkiServer");
+		categoryService.setType("category");
+		categoryService.setName("not set");
+		agentDescription.addServices(categoryService);
 		agentDescription.addServices(serviceDescription);
-		setCategory(agentDescription,"not set","not set");
+
+
 
 		try {
 			DFService.register(this, agentDescription);
 		}
+
 		catch (FIPAException fe) {}
+
 		addBehaviour(new WakerBehaviour(this, 10000) {
 			@Override
 			protected void onWake() {
@@ -161,56 +191,45 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
-
-			if (!aloneFlag && cnt > 0 && SetUp.categories.get(getInt(agent.getAID())) != "driver"){
-				SetUp.categories.replace(getInt(agent.getAID()), "alone");
-				setCategory(new DFAgentDescription(),"alone", getCategory(agent, agent.getAID()));
+			if (!aloneFlag && cnt > 0 && getCategory(agent, agent.getAID()) != "driver"){
+				setCategory(agent,agent.getAID(),"alone");
 			}
-			System.out.println(getCategory(agent, agent.getAID()));
 			aloneFlag = false;
-			for (Map.Entry<Integer, String> entry : SetUp.categories.entrySet())
-				if (entry.getValue().contains("tmp")) SetUp.categories.replace(entry.getKey(), "not set");
+			collectCategories(agent);
+			for (Map.Entry<AID, String> entry : categories.entrySet())
+				if (entry.getValue().contains("tmp")) setCategory(agent,entry.getKey(), "not set");
 
 			possiblePass = null;
 			possibleDriver = null;
 			passPrice = Double.POSITIVE_INFINITY;
 			bestPrice = Double.NEGATIVE_INFINITY;
 
-			DFAgentDescription template = new DFAgentDescription();
-			ServiceDescription serviceDescription = new ServiceDescription();
-			serviceDescription.setType("Tachki");
-			template.addServices(serviceDescription);
 
 			drivers = new HashSet<>();
+
+			DFAgentDescription template = new DFAgentDescription();
+			template.addServices(serviceDescription);
 			try {
 				DFAgentDescription[] agents = DFService.search(agent, template);
 				for (DFAgentDescription a : agents) {
-					if (!(a.getName().equals(agent.getAID())) && (SetUp.categories.get(getInt(a.getName())) != "passenger") && (SetUp.categories.get(getInt(a.getName())) != "alone"))
+					if (!(a.getName().equals(agent.getAID())) && getCategory(agent,a.getName()) != "passenger" && getCategory(agent,a.getName()) != "alone")
 						drivers.add(a.getName());
 				}
 			}
 			catch (FIPAException fe) {}
 
-			countOfDrivers = 0;
-			countOfNotSet = 0;
-
-			for (int i = 0; i < drivers.size(); i++) {
-				if (!(agent.getName().equals(agent.getAID())) && (SetUp.categories.get(getInt(agent.getAID())) == "driver"))
-					countOfDrivers++;
-				else if (!(agent.getName().equals(agent.getAID())) && (SetUp.categories.get(getInt(agent.getAID())) == "not set"))
-					countOfNotSet++;
-			}
 
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 			ParallelBehaviour pb = new ParallelBehaviour();
 			//waitOthers(drivers.size());
 
-			String print = "";
-			for (Map.Entry<Integer, String> entry : SetUp.categories.entrySet()) {
+			String print = "\r\n";
+			collectCategories(agent);
+			for (Map.Entry<AID, String> entry : categories.entrySet()) {
 				if (entry.getValue() == "passenger")
-					print = print + entry.getKey() + " " + entry.getValue() + " (driver is " + SetUp.chooseDrivers.get(entry.getKey()) + ")\r\n";
+					print = print + entry.getKey().getLocalName() + " " + entry.getValue() + " (driver is " + SetUp.chooseDrivers.get(getInt(entry.getKey())) + ")\r\n";
 				else
-					print = print + entry.getKey() + " " + entry.getValue() + "\r\n";
+					print = print + entry.getKey().getLocalName() + " " + entry.getValue() + "\r\n";
 			}
 			if (SetUp.forPrint == cnt) {
 				SetUp.forPrint += 1;
@@ -219,22 +238,21 @@ public class TravellerAgent extends Agent {
 				mutex.unlock();
 			}
 
-			//waitOthers(drivers.size());
-			if (SetUp.categories.get(getInt(agent.getAID())) == "not set" && canBePass(agent.getAID()) && canBeDriver(agent.getAID())) {
+			if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent.getAID()) && canBeDriver(agent.getAID())) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				pb.addSubBehaviour(new PassengerBehaviour(agent));
 				sb.addSubBehaviour(pb);
 				addBehaviour(sb);
 			}
-			else if (SetUp.categories.get(getInt(agent.getAID())) == "not set" && canBePass(agent.getAID())) {
+			else if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent.getAID())) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new PassengerBehaviour(agent));
 				sb.addSubBehaviour(pb);
 				addBehaviour(sb);
 			}
 
-			else if (SetUp.categories.get(getInt(agent.getAID())) == "driver" && seats > 0 && canBeDriver(agent.getAID())) {
+			else if (getCategory(agent,agent.getAID()) == "driver" && seats > 0 && canBeDriver(agent.getAID())) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				sb.addSubBehaviour(pb);
@@ -243,19 +261,20 @@ public class TravellerAgent extends Agent {
 			}
 			cnt++;
 			waitOthers(drivers.size());
-			if (SetUp.categories.get(getInt(agent.getAID())) != "alone" && SetUp.categories.get(getInt(agent.getAID())) != "passenger" && SetUp.categories.values().contains("not set"))
+			collectCategories(agent);
+			if (getCategory(agent,agent.getAID()) != "alone" && getCategory(agent,agent.getAID()) != "passenger" && categories.values().contains("not set"))
 				addBehaviour(new Restart(agent, 10000));
-			else if (SetUp.categories.get(getInt(agent.getAID())) == "alone") {
+			else if (getCategory(agent,agent.getAID()) == "alone") {
 				System.out.println(agent.getLocalName() + " goes alone");
 			}
 			else if (SetUp.forPrint > 0) {
-				if (!(SetUp.categories.containsValue("not set"))) {
-					print = "";
-					for (Map.Entry<Integer, String> entry : SetUp.categories.entrySet()) {
+				if (!(categories.containsValue("not set"))) {
+					print = "\r\n";
+					for (Map.Entry<AID, String> entry : categories.entrySet()) {
 						if (entry.getValue() == "passenger")
-							print = print + entry.getKey() + " " + entry.getValue() + " (driver is " + SetUp.chooseDrivers.get(entry.getKey()) + ")\r\n";
+							print = print + entry.getKey().getLocalName() + " " + entry.getValue() + " (driver is " + SetUp.chooseDrivers.get(getInt(entry.getKey()))  + ")\r\n";
 						else
-							print = print + entry.getKey() + " " + entry.getValue() + "\r\n";
+							print = print + entry.getKey().getLocalName() + " " + entry.getValue() + "\r\n";
 						SetUp.forPrint = -1;
 					}
 					mutex.lock();
@@ -280,7 +299,7 @@ public class TravellerAgent extends Agent {
 			msg.setContent(from + " " + to + " " + dist);
 			msg.setConversationId("SendData");
 			for (AID dr : drivers) {
-				if (SetUp.categories.get(getInt(dr)) != "driver" || SetUp.categories.get(getInt(agent.getAID())) != "driver")
+				if (getCategory(agent,dr) != "driver" || getCategory(agent,agent.getAID()) != "driver")
 					msg.addReceiver(dr);
 			}
 			agent.send(msg);
@@ -512,7 +531,7 @@ public class TravellerAgent extends Agent {
 					driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
 					if (util > 0)
 						aloneFlag = true;
-					if  (driverPrice <= passPrice && util > 0 && !(SetUp.categories.get(getInt(msg.getSender())).contains("passenger")))  {
+					if  (driverPrice <= passPrice && util > 0 && !(getCategory(agent,msg.getSender()).contains("passenger")))  {
 						passPrice = driverPrice;
 						possibleDriver = msg.getSender();
 					}
@@ -535,7 +554,7 @@ public class TravellerAgent extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			if (possibleDriver != null) {
 				msg.addReceiver(possibleDriver);
-				SetUp.categories.replace(getInt(possibleDriver),"tmpdriver");
+				setCategory(agent,possibleDriver,"tmpdriver");
 				msg.setContent(driverPrice + "");
 				msg.setConversationId("AgreeForPropose");
 				agent.send(msg);
@@ -562,7 +581,7 @@ public class TravellerAgent extends Agent {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForPropose") {
 					price = Double.parseDouble(msg.getContent());
-					if (price >= bestPrice && !(SetUp.categories.get(getInt(msg.getSender())).contains("driver"))) {
+					if (price >= bestPrice && !(getCategory(agent,msg.getSender()).contains("driver"))) {
 						bestPrice = price;
 						possiblePass = msg.getSender();
 					}
@@ -584,8 +603,8 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			ACLMessage msg = new ACLMessage(ACLMessage.AGREE);
 			if (possiblePass != null) {
-				SetUp.categories.replace(getInt(agent.getAID()),"driver");
-				SetUp.categories.replace(getInt(possiblePass),"passenger");
+				setCategory(agent,agent.getAID(),"driver");
+				setCategory(agent,possiblePass,"passenger");
 				msg.setContent("passenger");
 
 				msg.addReceiver(possiblePass);
@@ -630,7 +649,6 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		protected void onWake() {
-			System.out.println(myAgent.getLocalName() + ": restart life cycle");
 			addBehaviour(new LifeCycle(myAgent));
 		}
 	}
