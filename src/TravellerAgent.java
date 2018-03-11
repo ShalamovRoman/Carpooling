@@ -27,17 +27,16 @@ public class TravellerAgent extends Agent {
 	private AID possibleDriver;
 	private double bestPrice;
 	private HashSet<AID> drivers;
-	private int countOfDrivers;
-	private int countOfNotSet;
 	private List<String> way = new ArrayList<>();
 	private double passPrice;
 	private double driverPrice = Double.POSITIVE_INFINITY;
 	private final Lock mutex = new ReentrantLock(true);
 	private boolean aloneFlag = false;
-	private String category = "not set";
+	private double percent = 0.6;
 	private DFAgentDescription agentDescription = new DFAgentDescription();
 	private ServiceDescription serviceDescription = new ServiceDescription();
 	private ServiceDescription categoryService = new ServiceDescription();
+	private ServiceDescription possibleDriversService = new ServiceDescription();
 	private Map<AID, String> categories = new HashMap< >();
 
 	private int getInt(AID agent) {
@@ -53,19 +52,29 @@ public class TravellerAgent extends Agent {
 	}
 
 	private boolean canBeDriver(AID agent) {
-		if (SetUp.percents[getInt(agent)] > 0.2)
+		if (percent > 0.2 && seats > 0)
 			return true;
 		else
 			return false;
 	}
 
-	private boolean canBePass(AID agent) {
+	private boolean canBePass(Agent agent) {
 		boolean res = false;
-		for (int i = 0; i < SetUp.percents.length; i++) {
-			if (i != getInt(agent) && SetUp.percents[i] > 0.2)
-				res = true;
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("can be driver");
+		sd.setName("yes");
+		template.addServices(sd);
+		try {
+			DFAgentDescription[] agents = DFService.search(agent, template);
+			for (int i = 0; i < agents.length; i++) {
+				if (agents[i].getName() != agent.getAID()) res = true;
+			}
 		}
+		catch (FIPAException fe) {}
+
 		return res;
+
 	}
 
 	private void waitOthers(int i) {
@@ -79,6 +88,7 @@ public class TravellerAgent extends Agent {
 		DFAgentDescription ad = new DFAgentDescription();
 		ad.setName(aid);
 		ad.addServices(serviceDescription);
+		ad.addServices(possibleDriversService);
 		categoryService.setName(type);
 		ad.addServices(categoryService);
 		try {
@@ -150,7 +160,10 @@ public class TravellerAgent extends Agent {
 		serviceDescription.setName("TachkiServer");
 		categoryService.setType("category");
 		categoryService.setName("not set");
+		possibleDriversService.setType("can be driver");
+		possibleDriversService.setName("yes");
 		agentDescription.addServices(categoryService);
+		agentDescription.addServices(possibleDriversService);
 		agentDescription.addServices(serviceDescription);
 
 
@@ -237,22 +250,21 @@ public class TravellerAgent extends Agent {
 				System.out.println(print);
 				mutex.unlock();
 			}
-
-			if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent.getAID()) && canBeDriver(agent.getAID())) {
+			if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent) && canBeDriver(agent.getAID())) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				pb.addSubBehaviour(new PassengerBehaviour(agent));
 				sb.addSubBehaviour(pb);
 				addBehaviour(sb);
 			}
-			else if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent.getAID())) {
+			else if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent)) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new PassengerBehaviour(agent));
 				sb.addSubBehaviour(pb);
 				addBehaviour(sb);
 			}
 
-			else if (getCategory(agent,agent.getAID()) == "driver" && seats > 0 && canBeDriver(agent.getAID())) {
+			else if (getCategory(agent,agent.getAID()) == "driver" && canBeDriver(agent.getAID())) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				sb.addSubBehaviour(pb);
@@ -398,7 +410,7 @@ public class TravellerAgent extends Agent {
 		private void  CountUtility (Agent agent, String[] content, AID sender) {
 			utility = getDist2(way) + Double.parseDouble(content[2]) - dist2;
 			//процент уменьшается, если на предыдущем кругу агент не нашел себе попутчиков
-			price =  SetUp.percents[getInt(agent.getAID())] * (Double.parseDouble(content[2]) + extra - utility);
+			price =  percent * (Double.parseDouble(content[2]) + extra - utility);
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			msg.setConversationId("Propose");
 			msg.addReceiver(sender);
@@ -610,6 +622,9 @@ public class TravellerAgent extends Agent {
 				msg.addReceiver(possiblePass);
 				msg.setConversationId("AgreeForAgree");
 				agent.send(msg);
+				seats--;
+				percent = percent - 0.1;
+				if (!canBeDriver(agent.getAID())) possibleDriversService.setName("false");
 				mutex.lock();
 				System.out.println(agent.getAID().getLocalName() + " agrees for agree from " + possiblePass.getLocalName());
 				mutex.unlock();
@@ -631,7 +646,6 @@ public class TravellerAgent extends Agent {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForAgree") {
 						SetUp.chooseDrivers.put(getInt(agent.getAID()),msg.getSender().getLocalName());
-						SetUp.percents[getInt(msg.getSender())] = SetUp.percents[getInt(msg.getSender())] - 0.05;
 						mutex.lock();
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
 						mutex.unlock();

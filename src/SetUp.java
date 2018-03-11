@@ -13,10 +13,8 @@ public class SetUp extends Agent {
     private static SimpleWeightedGraph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
     public static DijkstraShortestPath graphMatrix;
     public static List<CyclicBarrier> b = new ArrayList<>();
-   // public static Map<Integer, String> categories = new HashMap< >();
     public static int forPrint;
     public static Map<Integer, String> chooseDrivers = new HashMap<>();
-    public static  Double[] percents;
 
     private void SetGraph() {
         graph.addVertex("A");
@@ -61,8 +59,6 @@ public class SetUp extends Agent {
         for (int i = 1; i <= AgentsInfo.length; i++) {
             b.add(new CyclicBarrier(i));
         }
-        percents = new Double[AgentsInfo.length];
-        Arrays.fill(percents, 0.6);
         for (int i = 0; i < AgentsInfo.length; i++) {
             try {
                 String[] info = (AgentsInfo[i]).split(" ");
