@@ -75,9 +75,9 @@ public class Manager extends Agent {
                         allocated = false;
                     for (Map.Entry<Integer, String[]> entry : agentsInfo.entrySet()) {
                         if (entry.getValue()[0].contains("p"))
-                            print = print + "Traveller_" + entry.getKey()+ " " + entry.getValue()[0] + " (driver is " + "Traveller_" + entry.getValue()[1] + ")\r\n";
+                            print += "Traveller_" + entry.getKey()+ " " + entry.getValue()[0] + " (driver is " + "Traveller_" + entry.getValue()[1] + ")\r\n";
                         else
-                            print = print + "Traveller_" + entry.getKey() + " " + entry.getValue()[0] + "\r\n";
+                            print +="Traveller_" + entry.getKey() + " " + entry.getValue()[0] + "\r\n";
                     }
                     System.out.println(print);
                     }

@@ -47,17 +47,14 @@ public class TravellerAgent extends Agent {
 	private double getDist2(List<String> arr){
 		double sum = 0;
 		for (int i = 0; i < arr.size() - 1; i++) {
-			sum = sum + SetUp.graphMatrix.getPath(arr.get(i), arr.get(i+1)).getWeight();
+		    sum += SetUp.graphMatrix.getPath(arr.get(i), arr.get(i + 1)).getWeight();
 		}
 		return sum;
 	}
 
-	private boolean canBeDriver(AID agent) {
-		if (percent > 0.2 && seats > 0)
-			return true;
-		else
-			return false;
-	}
+	private boolean canBeDriver() {
+        return (percent > 0.2 && seats > 0);
+    }
 
 	private boolean canBePass(Agent agent) {
 		boolean res = false;
@@ -68,9 +65,9 @@ public class TravellerAgent extends Agent {
 		template.addServices(sd);
 		try {
 			DFAgentDescription[] agents = DFService.search(agent, template);
-			for (int i = 0; i < agents.length; i++) {
-				if (agents[i].getName() != agent.getAID()) res = true;
-			}
+            for (DFAgentDescription el : agents) {
+                if (el.getName() != agent.getAID()) res = true;
+            }
 		}
 		catch (FIPAException fe) {}
 
@@ -107,9 +104,9 @@ public class TravellerAgent extends Agent {
 		template.addServices(sd);
 		try {
 			DFAgentDescription[] result = DFService.search(agent, template);
-			for (int i = 0; i < result.length; i++) {
-				if (result[i].getName().equals(aid)) c = type;
-			}
+            for (DFAgentDescription el : result) {
+                if (el.getName().equals(aid)) c = type;
+            }
 		}
 		catch (FIPAException fe) {}
 
@@ -118,8 +115,7 @@ public class TravellerAgent extends Agent {
 	}
 	private String getCategory(Agent agent, AID aid) {
 
-		String c = "";
-		c = search(agent,aid,"not set");
+        String c = search(agent,aid,"not set");
 		if (c=="not found") c = search(agent,aid,"driver");
 		if (c=="not found") c = search(agent,aid,"tmpdriver");
 		if (c=="not found") c = search(agent,aid,"passenger");
@@ -256,7 +252,7 @@ public class TravellerAgent extends Agent {
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 			ParallelBehaviour pb = new ParallelBehaviour();
 
-			if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent) && canBeDriver(agent.getAID())) {
+			if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent) && canBeDriver()) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				pb.addSubBehaviour(new PassengerBehaviour(agent));
@@ -270,7 +266,7 @@ public class TravellerAgent extends Agent {
 				addBehaviour(sb);
 			}
 
-			else if (getCategory(agent,agent.getAID()) == "driver" && canBeDriver(agent.getAID())) {
+			else if (getCategory(agent,agent.getAID()) == "driver" && canBeDriver()) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				sb.addSubBehaviour(pb);
@@ -335,15 +331,7 @@ public class TravellerAgent extends Agent {
 			}
 			sb.addSubBehaviour(pb2);
 
-			if (cnt == 0){}
-				//waitOthers(drivers.size());
-			else{}
-				//waitOthers(countOfDrivers);
 			sb.addSubBehaviour(new SendAgreeMsgToPass(agent));
-			if (cnt == 0){}
-				//waitOthers(drivers.size());
-			else{}
-				//waitOthers(countOfDrivers);
 			addBehaviour(sb);
 		}
 	}
@@ -368,15 +356,8 @@ public class TravellerAgent extends Agent {
 				pb.addSubBehaviour(handleMsg);
 			}
 			sb.addSubBehaviour(pb);
-			if (cnt == 0){}
-				//waitOthers(drivers.size());
-			else{}
-				//waitOthers(countOfNotSet);
 			sb.addSubBehaviour(new SendMsgToDriver(agent));
-			if (cnt == 0){}
-				//waitOthers(drivers.size());
-			else{}
-				//waitOthers(countOfNotSet);
+
 			final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
 			sb.addSubBehaviour(new ReceiverBehaviour(agent, handle, 10000, (MessageTemplate.MatchConversationId("AgreeForAgree"))));
 			sb.addSubBehaviour(new GetConfirmFromDriver(agent,handle));
@@ -612,7 +593,7 @@ public class TravellerAgent extends Agent {
 				agent.send(msg);
 				seats--;
 				percent = percent - 0.1;
-				if (!canBeDriver(agent.getAID())) possibleDriversService.setName("false");
+				if (!canBeDriver()) possibleDriversService.setName("false");
 				mutex.lock();
 				System.out.println(agent.getAID().getLocalName() + " agrees for agree from " + possiblePass.getLocalName());
 				mutex.unlock();
