@@ -57,12 +57,12 @@ public class SetUp extends Agent {
             b.add(new CyclicBarrier(i));
         }
         try {
-            AgentController manager = controller.createNewAgent("manager", Manager.class.getName(), new String[AgentsInfo.length]);
-            manager.start();
+            AgentController dispetcher = controller.createNewAgent("Dispetcher", Dispetcher.class.getName(), new String[AgentsInfo.length]);
+            dispetcher.start();
 
         }
         catch (ControllerException ex) {
-            System.err.println("Exception while adding manager");
+            System.err.println("Exception while adding dispetcher");
             ex.printStackTrace();
         }
         for (int i = 0; i < AgentsInfo.length; i++) {

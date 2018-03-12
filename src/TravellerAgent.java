@@ -38,7 +38,7 @@ public class TravellerAgent extends Agent {
 	private ServiceDescription categoryService = new ServiceDescription();
 	private ServiceDescription possibleDriversService = new ServiceDescription();
 	private Map<AID, String> categories = new HashMap< >();
-	private AID manager;
+	private AID dispetcher;
 
 	private int getInt(AID agent) {
 		return Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", ""));
@@ -138,11 +138,11 @@ public class TravellerAgent extends Agent {
 		catch (FIPAException fe) {}
 
 	}
-	private void sendMsgToManager(Agent agent, String info) {
+	private void sendMsgToDispetcher(Agent agent, String info) {
 		ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 		msg.setContent(info);
-		msg.setConversationId("Manager");
-		msg.addReceiver(manager);
+		msg.setConversationId("Dispetcher");
+		msg.addReceiver(dispetcher);
 		agent.send(msg);
 	}
 
@@ -182,7 +182,7 @@ public class TravellerAgent extends Agent {
 		try {
 			DFAgentDescription[] agents = DFService.search(this, template);
 			for (DFAgentDescription a : agents) {
-				if (a.getName().getLocalName().contains("ma")) manager = a.getName();
+				if (a.getName().getLocalName().contains("Di")) dispetcher = a.getName();
 			}
 		}
 		catch (FIPAException fe) {}
@@ -226,8 +226,8 @@ public class TravellerAgent extends Agent {
 			for (Map.Entry<AID, String> entry : categories.entrySet())
 				if (entry.getValue().contains("tmp")) setCategory(agent,entry.getKey(), "not set");
 
-			if (choosenDriver != null) sendMsgToManager(agent, getCategory(agent,agent.getAID()) + "_" + getInt(choosenDriver));
-			else sendMsgToManager(agent, getCategory(agent,agent.getAID()) + "_ ");
+			if (choosenDriver != null) sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_" + getInt(choosenDriver));
+			else sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_ ");
 			choosenDriver = null;
 			possiblePass = null;
 			possibleDriver = null;
@@ -276,7 +276,7 @@ public class TravellerAgent extends Agent {
 			cnt++;
 			waitOthers(drivers.size());
 			collectCategories(agent);
-			if (!categories.values().contains("not set")) sendMsgToManager(agent, "yo manager print pls");
+			if (!categories.values().contains("not set")) sendMsgToDispetcher(agent, "yo dispetcher print pls");
 			if (getCategory(agent,agent.getAID()) != "alone" && getCategory(agent,agent.getAID()) != "passenger" && categories.values().contains("not set"))
 				addBehaviour(new Restart(agent, 10000));
 		}
@@ -408,21 +408,22 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			try {
 				ACLMessage msg = handle.getMessage();
-				if  (msg.getContent() != null) {
+				if (msg.getContent() != null) {
 					String[] content = msg.getContent().split(" ");
-					if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
-						way2 = way;
+					if (way.size() == 2) {
+						way2.add(from);
+						way2.add(content[0]);
+						way2.add(content[1]);
+						way2.add(to);
+						dist2 = getDist2(way2);
+						extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1], to).getWeight();
 						CountUtility(agent, content, msg.getSender());
-					} else if (((way.contains(content[0])) && (!way.contains(content[1])) && !(content[0] == to)) || ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) > way.lastIndexOf(content[1])))) {
-						if (way.size() == 2) {
-							way2.add(from);
-							way2.add(content[0]);
-							way2.add(content[1]);
-							way2.add(to);
-							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
+					} else {
+						if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
+							way2 = way;
 							CountUtility(agent, content, msg.getSender());
-						} else {
+						}
+						else if (((way.contains(content[0])) && (!way.contains(content[1])) && !(content[0] == to)) || ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) > way.lastIndexOf(content[1])))) {
 							int i = way.lastIndexOf(content[0]);
 							way2 = way.subList(0, i + 1);
 							way2.add(content[0]);
@@ -430,20 +431,10 @@ public class TravellerAgent extends Agent {
 							way2.add(content[1]);
 							way2.add(way.get(way.size() - 1));
 							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1],way.get(way.size() - 1)).getWeight();
+							extra = SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						}
-					} else if (!(way.contains(content[0])) && (way.contains(content[1])) && !(content[1] == from)) {
-						if (way.size() == 2) {
-							way2.add(from);
-							way2.add(content[0]);
-							way2.add(content[1]);
-							way2.add(to);
-							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
-							int a = 0;
-							CountUtility(agent, content, msg.getSender());
-						} else {
+						else if (!(way.contains(content[0])) && (way.contains(content[1])) && !(content[1] == from)) {
 							int i = way.indexOf(content[1]);
 							way2.add(way.get(0));
 							way2.add(content[0]);
@@ -451,18 +442,7 @@ public class TravellerAgent extends Agent {
 							way2.add(content[1]);
 							way.addAll(way.subList(i + 1, way.size()));
 							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0],way.get(1)).getWeight();
-							CountUtility(agent, content, msg.getSender());
-						}
-					} else {
-						if (way.size() == 2) {
-							way2.add(from);
-							way2.add(content[0]);
-							way2.add(content[1]);
-							way2.add(to);
-							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1],to).getWeight();
-							double b = 0;
+							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						} else {
 							way2.add(way.get(0));
@@ -471,10 +451,9 @@ public class TravellerAgent extends Agent {
 							way2.add(content[1]);
 							way2.add(way.get(way.size() - 1));
 							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0],way.get(1)).getWeight() + SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1],way.get(way.size() - 1)).getWeight();
+							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						}
-
 					}
 				}
 			}
@@ -482,6 +461,7 @@ public class TravellerAgent extends Agent {
 			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
 		}
 	}
+
 	//пассажир из всех предложений от водителей выбирает с минимальной ценой
 	private class GetPossibleDriver extends OneShotBehaviour {
 		private ReceiverBehaviour.Handle handle;
