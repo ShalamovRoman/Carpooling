@@ -1,6 +1,5 @@
 import jade.core.Agent;
 import jade.core.AID;
-import jade.core.AgentDescriptor;
 import jade.core.behaviours.*;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -25,6 +24,7 @@ public class TravellerAgent extends Agent {
 	private int cnt = 0;
 	private AID possiblePass;
 	private AID possibleDriver;
+	private AID choosenDriver;
 	private double bestPrice;
 	private HashSet<AID> drivers;
 	private List<String> way = new ArrayList<>();
@@ -38,6 +38,7 @@ public class TravellerAgent extends Agent {
 	private ServiceDescription categoryService = new ServiceDescription();
 	private ServiceDescription possibleDriversService = new ServiceDescription();
 	private Map<AID, String> categories = new HashMap< >();
+	private AID manager;
 
 	private int getInt(AID agent) {
 		return Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", ""));
@@ -141,6 +142,13 @@ public class TravellerAgent extends Agent {
 		catch (FIPAException fe) {}
 
 	}
+	private void sendMsgToManager(Agent agent, String info) {
+		ACLMessage msg = new ACLMessage(ACLMessage.CFP);
+		msg.setContent(info);
+		msg.setConversationId("Manager");
+		msg.addReceiver(manager);
+		agent.send(msg);
+	}
 
 	protected void setup() {
 		Object[] args = getArguments();
@@ -166,12 +174,21 @@ public class TravellerAgent extends Agent {
 		agentDescription.addServices(possibleDriversService);
 		agentDescription.addServices(serviceDescription);
 
-
-
 		try {
 			DFService.register(this, agentDescription);
 		}
 
+		catch (FIPAException fe) {}
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("Tachki");
+		template.addServices(sd);
+		try {
+			DFAgentDescription[] agents = DFService.search(this, template);
+			for (DFAgentDescription a : agents) {
+				if (a.getName().getLocalName().contains("ma")) manager = a.getName();
+			}
+		}
 		catch (FIPAException fe) {}
 
 		addBehaviour(new WakerBehaviour(this, 10000) {
@@ -206,12 +223,16 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			if (!aloneFlag && cnt > 0 && getCategory(agent, agent.getAID()) != "driver"){
 				setCategory(agent,agent.getAID(),"alone");
+				System.out.println(agent.getLocalName() + " goes alone");
 			}
 			aloneFlag = false;
 			collectCategories(agent);
 			for (Map.Entry<AID, String> entry : categories.entrySet())
 				if (entry.getValue().contains("tmp")) setCategory(agent,entry.getKey(), "not set");
 
+			if (choosenDriver != null) sendMsgToManager(agent, getCategory(agent,agent.getAID()) + "_" + getInt(choosenDriver));
+			else sendMsgToManager(agent, getCategory(agent,agent.getAID()) + "_ ");
+			choosenDriver = null;
 			possiblePass = null;
 			possibleDriver = null;
 			passPrice = Double.POSITIVE_INFINITY;
@@ -225,7 +246,7 @@ public class TravellerAgent extends Agent {
 			try {
 				DFAgentDescription[] agents = DFService.search(agent, template);
 				for (DFAgentDescription a : agents) {
-					if (!(a.getName().equals(agent.getAID())) && getCategory(agent,a.getName()) != "passenger" && getCategory(agent,a.getName()) != "alone")
+					if (!(a.getName().equals(agent.getAID())) && (getCategory(agent,a.getName()) == "not set" || getCategory(agent,a.getName()) == "driver"))
 						drivers.add(a.getName());
 				}
 			}
@@ -234,22 +255,7 @@ public class TravellerAgent extends Agent {
 
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 			ParallelBehaviour pb = new ParallelBehaviour();
-			//waitOthers(drivers.size());
 
-			String print = "\r\n";
-			collectCategories(agent);
-			for (Map.Entry<AID, String> entry : categories.entrySet()) {
-				if (entry.getValue() == "passenger")
-					print = print + entry.getKey().getLocalName() + " " + entry.getValue() + " (driver is " + SetUp.chooseDrivers.get(getInt(entry.getKey())) + ")\r\n";
-				else
-					print = print + entry.getKey().getLocalName() + " " + entry.getValue() + "\r\n";
-			}
-			if (SetUp.forPrint == cnt) {
-				SetUp.forPrint += 1;
-				mutex.lock();
-				System.out.println(print);
-				mutex.unlock();
-			}
 			if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent) && canBeDriver(agent.getAID())) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
@@ -274,27 +280,9 @@ public class TravellerAgent extends Agent {
 			cnt++;
 			waitOthers(drivers.size());
 			collectCategories(agent);
+			if (!categories.values().contains("not set")) sendMsgToManager(agent, "yo manager print pls");
 			if (getCategory(agent,agent.getAID()) != "alone" && getCategory(agent,agent.getAID()) != "passenger" && categories.values().contains("not set"))
 				addBehaviour(new Restart(agent, 10000));
-			else if (getCategory(agent,agent.getAID()) == "alone") {
-				System.out.println(agent.getLocalName() + " goes alone");
-			}
-			else if (SetUp.forPrint > 0) {
-				if (!(categories.containsValue("not set"))) {
-					print = "\r\n";
-					for (Map.Entry<AID, String> entry : categories.entrySet()) {
-						if (entry.getValue() == "passenger")
-							print = print + entry.getKey().getLocalName() + " " + entry.getValue() + " (driver is " + SetUp.chooseDrivers.get(getInt(entry.getKey()))  + ")\r\n";
-						else
-							print = print + entry.getKey().getLocalName() + " " + entry.getValue() + "\r\n";
-						SetUp.forPrint = -1;
-					}
-					mutex.lock();
-					System.out.println(print);
-					System.out.println("Agents allocated");
-					mutex.unlock();
-				}
-			}
 		}
 	}
 	//посылка каждому агенту информации о себе: from, to и кратчайшее расстояние
@@ -645,7 +633,7 @@ public class TravellerAgent extends Agent {
 			try {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForAgree") {
-						SetUp.chooseDrivers.put(getInt(agent.getAID()),msg.getSender().getLocalName());
+						choosenDriver = msg.getSender();
 						mutex.lock();
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
 						mutex.unlock();

@@ -13,8 +13,6 @@ public class SetUp extends Agent {
     private static SimpleWeightedGraph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
     public static DijkstraShortestPath graphMatrix;
     public static List<CyclicBarrier> b = new ArrayList<>();
-    public static int forPrint;
-    public static Map<Integer, String> chooseDrivers = new HashMap<>();
 
     private void SetGraph() {
         graph.addVertex("A");
@@ -37,7 +35,6 @@ public class SetUp extends Agent {
     }
     protected void setup() {
 
-        forPrint = 0;
         PlatformController controller = getContainerController();
 
         SetGraph();
@@ -59,11 +56,20 @@ public class SetUp extends Agent {
         for (int i = 1; i <= AgentsInfo.length; i++) {
             b.add(new CyclicBarrier(i));
         }
+        try {
+            AgentController manager = controller.createNewAgent("manager", Manager.class.getName(), new String[AgentsInfo.length]);
+            manager.start();
+
+        }
+        catch (ControllerException ex) {
+            System.err.println("Exception while adding manager");
+            ex.printStackTrace();
+        }
         for (int i = 0; i < AgentsInfo.length; i++) {
             try {
                 String[] info = (AgentsInfo[i]).split(" ");
                 AgentController traveler = controller.createNewAgent("Traveller_" + i
-                        , TravellerAgent.class.getName(), info);;
+                        , TravellerAgent.class.getName(), info);
                 traveler.start();
 
             }
