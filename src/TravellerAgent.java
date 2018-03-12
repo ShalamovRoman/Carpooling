@@ -28,6 +28,7 @@ public class TravellerAgent extends Agent {
 	private double bestPrice;
 	private HashSet<AID> drivers;
 	private List<String> way = new ArrayList<>();
+	private List<String> driversWay = new ArrayList<>();
 	private double passPrice;
 	private double driverPrice = Double.POSITIVE_INFINITY;
 	private final Lock mutex = new ReentrantLock(true);
@@ -217,6 +218,7 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
+
 			if (!aloneFlag && cnt > 0 && getCategory(agent, agent.getAID()) != "driver"){
 				setCategory(agent,agent.getAID(),"alone");
 				System.out.println(agent.getLocalName() + " goes alone");
@@ -225,6 +227,7 @@ public class TravellerAgent extends Agent {
 			collectCategories(agent);
 			for (Map.Entry<AID, String> entry : categories.entrySet())
 				if (entry.getValue().contains("tmp")) setCategory(agent,entry.getKey(), "not set");
+
 
 			if (choosenDriver != null) sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_" + getInt(choosenDriver));
 			else sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_ ");
@@ -369,11 +372,11 @@ public class TravellerAgent extends Agent {
 		private ReceiverBehaviour.Handle handle;
 		private Agent agent;
 		private AID sender;
-		private double utility = 0;
-		private double price = 0;
-		private double dist2 = 0;
-		private List<String> way2 = new ArrayList<>();
-		private double extra = 0;
+		private double utility;
+		private double price;
+		private double dist2;
+		private List<String> way2;
+		private double extra;
 
 		//вычисление выгоды для системы от совместной поездки с определенным пассажиром
 		private void  CountUtility (Agent agent, String[] content, AID sender) {
@@ -388,7 +391,7 @@ public class TravellerAgent extends Agent {
 			msg.setContent(price + " " + utility + "\n" + tmp2);
 			agent.send(msg);
 			mutex.lock();
-			System.out.println(agent.getLocalName() + " sends propose = " + (int)Math.round(price) + " to " + sender.getLocalName());
+			System.out.println(agent.getLocalName() + " sends propose = " + (int)Math.round(price)  + " to " + sender.getLocalName());
 			mutex.unlock();
 
 		}
@@ -398,11 +401,11 @@ public class TravellerAgent extends Agent {
 			this.agent = agent;
 			this.handle = handle;
 			this.sender = sender;
-			this.way2 = way2;
-			this.price = price;
-			this.utility = utility;
+			this.way2 = new ArrayList<>();
+			this.price = 0;
+			this.utility = 0;
 			this.dist2 = dist;
-			this.extra = extra;
+			this.extra = 0;
 		}
 		@Override
 		public void action() {
@@ -420,14 +423,16 @@ public class TravellerAgent extends Agent {
 						CountUtility(agent, content, msg.getSender());
 					} else {
 						if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
-							way2 = way;
+							way2.addAll(way);
 							CountUtility(agent, content, msg.getSender());
 						}
 						else if (((way.contains(content[0])) && (!way.contains(content[1])) && !(content[0] == to)) || ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) > way.lastIndexOf(content[1])))) {
 							int i = way.lastIndexOf(content[0]);
-							way2 = way.subList(0, i + 1);
+							String tmp3 = "";
+							for (String w: way) tmp3 = tmp3 + w + " ";
+							way2.addAll(way.subList(0, i + 1));
 							way2.add(content[0]);
-							way2.addAll(way.subList(i + 1, way.size() - 1));
+							way2.addAll(way.subList(i + 1, way.size()));
 							way2.add(content[1]);
 							way2.add(way.get(way.size() - 1));
 							dist2 = getDist2(way2);
@@ -440,7 +445,7 @@ public class TravellerAgent extends Agent {
 							way2.add(content[0]);
 							way2.addAll(way.subList(1, i + 1));
 							way2.add(content[1]);
-							way.addAll(way.subList(i + 1, way.size()));
+							way2.addAll(way.subList(i + 1, way.size()));
 							dist2 = getDist2(way2);
 							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
@@ -488,13 +493,15 @@ public class TravellerAgent extends Agent {
 					way2 = Arrays.asList(msg.getContent().split("\n")[1].split(" "));
 					int i = way2.indexOf(from);
 					int j = way2.subList(i,way2.size()).indexOf(to);
-					dist2 = getDist2(way2.subList(i, j + 1));
+					double tmpdist = getDist2(way2.subList(i, j + 1));
 					driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
-					if (util > 0)
+					if (util >= 0)
 						aloneFlag = true;
-					if  (driverPrice <= passPrice && util > 0 && !(getCategory(agent,msg.getSender()).contains("passenger")))  {
+					if  (driverPrice <= passPrice && tmpdist < 1.5 * dist && util >= 0 && !(getCategory(agent,msg.getSender()).contains("passenger")))  {
 						passPrice = driverPrice;
 						possibleDriver = msg.getSender();
+						driversWay.clear();
+						for (String w: way2) driversWay.add(w);
 					}
 				}
 			}
@@ -515,8 +522,10 @@ public class TravellerAgent extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			if (possibleDriver != null) {
 				msg.addReceiver(possibleDriver);
-				setCategory(agent,possibleDriver,"tmpdriver");
-				msg.setContent(driverPrice + "");
+				if (!getCategory(agent,possibleDriver).contains("dr")) setCategory(agent,possibleDriver,"tmpdriver");
+				String tmp2 = "";
+				for (String w: driversWay) tmp2 = tmp2 + w + " ";
+				msg.setContent(driverPrice + "\n" + tmp2);
 				msg.setConversationId("AgreeForPropose");
 				agent.send(msg);
 				System.out.println(agent.getAID().getLocalName() + " agrees for propose from " + possibleDriver.getLocalName());
@@ -541,10 +550,12 @@ public class TravellerAgent extends Agent {
 			try {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForPropose") {
-					price = Double.parseDouble(msg.getContent());
+					price = Double.parseDouble(msg.getContent().split("\n")[0]);
 					if (price >= bestPrice && !(getCategory(agent,msg.getSender()).contains("driver"))) {
 						bestPrice = price;
 						possiblePass = msg.getSender();
+						way.clear();
+						for (String s: msg.getContent().split("\n")[1].split(" ")) way.add(s);
 					}
 				}
 			}
