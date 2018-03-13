@@ -31,7 +31,6 @@ public class TravellerAgent extends Agent {
 	private List<String> driversWay = new ArrayList<>();
 	private double passPrice;
 	private double driverPrice = Double.POSITIVE_INFINITY;
-	private final Lock mutex = new ReentrantLock(true);
 	private boolean aloneFlag = false;
 	private double percent = 0.6;
 	private DFAgentDescription agentDescription = new DFAgentDescription();
@@ -47,9 +46,8 @@ public class TravellerAgent extends Agent {
 
 	private double getDist2(List<String> arr){
 		double sum = 0;
-		for (int i = 0; i < arr.size() - 1; i++) {
-		    sum += SetUp.graphMatrix.getPath(arr.get(i), arr.get(i + 1)).getWeight();
-		}
+		for (int i = 0; i < arr.size() - 1; i++)
+		    sum += Dispetcher.graphMatrix.getPath(arr.get(i), arr.get(i + 1)).getWeight();
 		return sum;
 	}
 
@@ -71,14 +69,12 @@ public class TravellerAgent extends Agent {
             }
 		}
 		catch (FIPAException fe) {}
-
 		return res;
-
 	}
 
 	private void waitOthers(int i) {
 		try {
-			SetUp.b.get(i).await();
+			Dispetcher.b.get(i).await();
 		}
 		catch (InterruptedException e) {}
 		catch (BrokenBarrierException e) {}
@@ -92,9 +88,7 @@ public class TravellerAgent extends Agent {
 		ad.addServices(categoryService);
 		try {
 			DFService.modify(agent,ad);
-		} catch (FIPAException e) {
-			e.printStackTrace();
-		}
+		} catch (FIPAException e) {}
 	}
 	private String search (Agent agent, AID aid, String type){
 		String c = "not found";
@@ -110,18 +104,16 @@ public class TravellerAgent extends Agent {
             }
 		}
 		catch (FIPAException fe) {}
-
 		return c;
 
 	}
 	private String getCategory(Agent agent, AID aid) {
 
         String c = search(agent,aid,"not set");
-		if (c=="not found") c = search(agent,aid,"driver");
-		if (c=="not found") c = search(agent,aid,"tmpdriver");
-		if (c=="not found") c = search(agent,aid,"passenger");
-		if (c=="not found") c = search(agent,aid,"tmppassenger");
-		if (c=="not found") c = search(agent,aid,"alone");
+		if (c == "not found") c = search(agent,aid,"driver");
+		if (c == "not found") c = search(agent,aid,"tmp driver");
+		if (c == "not found") c = search(agent,aid,"passenger");
+		if (c == "not found") c = search(agent,aid,"alone");
 		return c;
 	}
 	private void collectCategories(Agent agent) {
@@ -154,11 +146,8 @@ public class TravellerAgent extends Agent {
 		way.add(from);
 		way.add(to);
 		seats = Integer.parseInt((String)args[2]);
-		mutex.lock();
-		dist = SetUp.graphMatrix.getPath(from, to).getWeight();
+		dist = Dispetcher.graphMatrix.getPath(from, to).getWeight();
 		System.out.println(getAID().getLocalName() + ": from " + from + " to " + to + ", " + seats + " free seats, dist = " + dist);
-		mutex.unlock();
-
 
 		agentDescription.setName(getAID());
 		serviceDescription.setType("Tachki");
@@ -203,22 +192,19 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
-			addBehaviour(new StartCycle(agent, this));
+			addBehaviour(new StartCycle(agent));
 		}
 	}
-	// запускает определенное поведение агента в зависимости от его категории и категорий других агентов
+	// starts agent behaviour depending on all agents categories
 	public class StartCycle extends OneShotBehaviour {
 		private Agent agent;
-		private LifeCycle cycle;
 
-		public StartCycle(Agent agent, LifeCycle cycle) {
+		public StartCycle(Agent agent) {
 			super(agent);
 			this.agent = agent;
-			this.cycle = cycle;
 		}
 		@Override
 		public void action() {
-
 			if (!aloneFlag && cnt > 0 && getCategory(agent, agent.getAID()) != "driver"){
 				setCategory(agent,agent.getAID(),"alone");
 				System.out.println(agent.getLocalName() + " goes alone");
@@ -226,18 +212,18 @@ public class TravellerAgent extends Agent {
 			aloneFlag = false;
 			collectCategories(agent);
 			for (Map.Entry<AID, String> entry : categories.entrySet())
-				if (entry.getValue().contains("tmp")) setCategory(agent,entry.getKey(), "not set");
+				if (entry.getValue().contains("tmp"))
+					setCategory(agent,entry.getKey(), "not set");
 
-
-			if (choosenDriver != null) sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_" + getInt(choosenDriver));
-			else sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_ ");
+			if (choosenDriver != null)
+				sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_" + getInt(choosenDriver));
+			else
+				sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_ ");
 			choosenDriver = null;
 			possiblePass = null;
 			possibleDriver = null;
 			passPrice = Double.POSITIVE_INFINITY;
 			bestPrice = Double.NEGATIVE_INFINITY;
-
-
 			drivers = new HashSet<>();
 
 			DFAgentDescription template = new DFAgentDescription();
@@ -251,7 +237,10 @@ public class TravellerAgent extends Agent {
 			}
 			catch (FIPAException fe) {}
 
-
+			waitOthers(drivers.size());
+			int max = getInt(agent.getAID());
+			for (AID dr: drivers) if (getInt(dr)> max) max = getInt(dr);
+			if (getInt(agent.getAID()) == max)sendMsgToDispetcher(agent, "cycle ended");
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 			ParallelBehaviour pb = new ParallelBehaviour();
 
@@ -279,12 +268,13 @@ public class TravellerAgent extends Agent {
 			cnt++;
 			waitOthers(drivers.size());
 			collectCategories(agent);
-			if (!categories.values().contains("not set")) sendMsgToDispetcher(agent, "yo dispetcher print pls");
+			if (!categories.values().contains("not set"))
+				sendMsgToDispetcher(agent, "allocated");
 			if (getCategory(agent,agent.getAID()) != "alone" && getCategory(agent,agent.getAID()) != "passenger" && categories.values().contains("not set"))
 				addBehaviour(new Restart(agent, 10000));
 		}
 	}
-	//посылка каждому агенту информации о себе: from, to и кратчайшее расстояние
+	// sending agent info to other agents
 	private class SendData extends OneShotBehaviour{
 		private Agent agent;
 
@@ -320,7 +310,7 @@ public class TravellerAgent extends Agent {
 				SequentialBehaviour handleMsg = new SequentialBehaviour(agent);
 				final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
 				handleMsg.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("SendData")))));
-				handleMsg.addSubBehaviour(new GetPossiblePass(agent, dr, handle));
+				handleMsg.addSubBehaviour(new GetPossiblePass(agent, handle));
 				pb.addSubBehaviour(handleMsg);
 			}
 			sb.addSubBehaviour(pb);
@@ -329,11 +319,10 @@ public class TravellerAgent extends Agent {
 				SequentialBehaviour handleMsg2 = new SequentialBehaviour(agent);
 				final ReceiverBehaviour.Handle handle2 = ReceiverBehaviour.newHandle();
 				handleMsg2.addSubBehaviour(new ReceiverBehaviour(agent, handle2, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("AgreeForPropose")))));
-				handleMsg2.addSubBehaviour(new GetBestPass(agent, dr, handle2));
+				handleMsg2.addSubBehaviour(new GetBestPass(agent, handle2));
 				pb.addSubBehaviour(handleMsg2);
 			}
 			sb.addSubBehaviour(pb2);
-
 			sb.addSubBehaviour(new SendAgreeMsgToPass(agent));
 			addBehaviour(sb);
 		}
@@ -355,52 +344,46 @@ public class TravellerAgent extends Agent {
 				SequentialBehaviour handleMsg = new SequentialBehaviour(agent);
 				final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
 				handleMsg.addSubBehaviour(new ReceiverBehaviour(agent, handle, 5000, MessageTemplate.and(MessageTemplate.MatchSender(dr), (MessageTemplate.MatchConversationId("Propose")))));
-				handleMsg.addSubBehaviour(new GetPossibleDriver(agent, dr, handle));
+				handleMsg.addSubBehaviour(new GetPossibleDriver(agent, handle));
 				pb.addSubBehaviour(handleMsg);
 			}
 			sb.addSubBehaviour(pb);
 			sb.addSubBehaviour(new SendMsgToDriver(agent));
-
 			final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
 			sb.addSubBehaviour(new ReceiverBehaviour(agent, handle, 10000, (MessageTemplate.MatchConversationId("AgreeForAgree"))));
 			sb.addSubBehaviour(new GetConfirmFromDriver(agent,handle));
 			addBehaviour(sb);
 		}
 	}
-	//как водитель, агент считает все предложения(цены) для всех пассажиров
+	// driver counts suggestions from all passengers
 	private class GetPossiblePass extends OneShotBehaviour {
 		private ReceiverBehaviour.Handle handle;
 		private Agent agent;
-		private AID sender;
 		private double utility;
 		private double price;
 		private double dist2;
 		private List<String> way2;
 		private double extra;
 
-		//вычисление выгоды для системы от совместной поездки с определенным пассажиром
+		// count system utility of driving with concrete passenger
 		private void  CountUtility (Agent agent, String[] content, AID sender) {
 			utility = getDist2(way) + Double.parseDouble(content[2]) - dist2;
-			//процент уменьшается, если на предыдущем кругу агент не нашел себе попутчиков
+			// decrease percent if during the last circle agent couldn't find any passengers
 			price =  percent * (Double.parseDouble(content[2]) + extra - utility);
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			msg.setConversationId("Propose");
 			msg.addReceiver(sender);
-			String tmp2 = "";
-			for (String w: way2) tmp2 = tmp2 + w + " ";
-			msg.setContent(price + " " + utility + "\n" + tmp2);
+			String wayString = "";
+			for (String w: way2) wayString = wayString + w + " ";
+			msg.setContent(price + " " + utility + "\n" + wayString);
 			agent.send(msg);
-			mutex.lock();
 			System.out.println(agent.getLocalName() + " sends propose = " + (int)Math.round(price)  + " to " + sender.getLocalName());
-			mutex.unlock();
-
 		}
-		//пересчет расстояния, пути и цены для всех возможных пассажиров
-		public GetPossiblePass( Agent agent, AID sender, ReceiverBehaviour.Handle handle) {
+		// count distance, way and price for all possible passengers
+		public GetPossiblePass( Agent agent, ReceiverBehaviour.Handle handle) {
 
 			this.agent = agent;
 			this.handle = handle;
-			this.sender = sender;
 			this.way2 = new ArrayList<>();
 			this.price = 0;
 			this.utility = 0;
@@ -419,7 +402,7 @@ public class TravellerAgent extends Agent {
 						way2.add(content[1]);
 						way2.add(to);
 						dist2 = getDist2(way2);
-						extra = SetUp.graphMatrix.getPath(from, content[0]).getWeight() + SetUp.graphMatrix.getPath(content[1], to).getWeight();
+						extra = Dispetcher.graphMatrix.getPath(from, content[0]).getWeight() + Dispetcher.graphMatrix.getPath(content[1], to).getWeight();
 						CountUtility(agent, content, msg.getSender());
 					} else {
 						if ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) <= way.lastIndexOf(content[1]))) {
@@ -436,7 +419,7 @@ public class TravellerAgent extends Agent {
 							way2.add(content[1]);
 							way2.add(way.get(way.size() - 1));
 							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
+							extra = Dispetcher.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + Dispetcher.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						}
 						else if (!(way.contains(content[0])) && (way.contains(content[1])) && !(content[1] == from)) {
@@ -447,7 +430,7 @@ public class TravellerAgent extends Agent {
 							way2.add(content[1]);
 							way2.addAll(way.subList(i + 1, way.size()));
 							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight();
+							extra = Dispetcher.graphMatrix.getPath(way.get(0), content[0]).getWeight() + Dispetcher.graphMatrix.getPath(content[0], way.get(1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						} else {
 							way2.add(way.get(0));
@@ -456,7 +439,7 @@ public class TravellerAgent extends Agent {
 							way2.add(content[1]);
 							way2.add(way.get(way.size() - 1));
 							dist2 = getDist2(way2);
-							extra = SetUp.graphMatrix.getPath(way.get(0), content[0]).getWeight() + SetUp.graphMatrix.getPath(content[0], way.get(1)).getWeight() + SetUp.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + SetUp.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
+							extra = Dispetcher.graphMatrix.getPath(way.get(0), content[0]).getWeight() + Dispetcher.graphMatrix.getPath(content[0], way.get(1)).getWeight() + Dispetcher.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + Dispetcher.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						}
 					}
@@ -467,21 +450,19 @@ public class TravellerAgent extends Agent {
 		}
 	}
 
-	//пассажир из всех предложений от водителей выбирает с минимальной ценой
+	// passenger chooses the offer with the best price
 	private class GetPossibleDriver extends OneShotBehaviour {
 		private ReceiverBehaviour.Handle handle;
 		private Agent agent;
-		private AID sender;
-		private double price = 0;
-		private List<String> way2 = new ArrayList<>();
-		private double dist2 = 0;
+		private double price;
+		private List<String> way2;
+		private double dist2;
 
-		public GetPossibleDriver(Agent agent, AID sender, ReceiverBehaviour.Handle handle) {
+		public GetPossibleDriver(Agent agent, ReceiverBehaviour.Handle handle) {
 			this.agent = agent;
 			this.handle = handle;
-			this.sender = sender;
-			this.price = price;
-			this.way2 = way2;
+			this.price =  0;
+			this.way2 = new ArrayList<>();
 			this.dist2 = dist;
 		}
 		@Override
@@ -501,7 +482,8 @@ public class TravellerAgent extends Agent {
 						passPrice = driverPrice;
 						possibleDriver = msg.getSender();
 						driversWay.clear();
-						for (String w: way2) driversWay.add(w);
+						for (String w: way2)
+							driversWay.add(w);
 					}
 				}
 			}
@@ -509,7 +491,7 @@ public class TravellerAgent extends Agent {
 			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
 		}
 	}
-	//отправка сообщения водителю с лучшим предложением
+	// sending message to driver with the best offer
 	private class SendMsgToDriver extends OneShotBehaviour {
 		private Agent agent;
 
@@ -522,28 +504,27 @@ public class TravellerAgent extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
 			if (possibleDriver != null) {
 				msg.addReceiver(possibleDriver);
-				if (!getCategory(agent,possibleDriver).contains("dr")) setCategory(agent,possibleDriver,"tmpdriver");
-				String tmp2 = "";
-				for (String w: driversWay) tmp2 = tmp2 + w + " ";
-				msg.setContent(driverPrice + "\n" + tmp2);
+				if (!getCategory(agent,possibleDriver).contains("dr")) setCategory(agent,possibleDriver,"tmp driver");
+				String wayString = "";
+				for (String w: driversWay)
+					wayString = wayString + w + " ";
+				msg.setContent(driverPrice + "\n" + wayString);
 				msg.setConversationId("AgreeForPropose");
 				agent.send(msg);
 				System.out.println(agent.getAID().getLocalName() + " agrees for propose from " + possibleDriver.getLocalName());
 			}
 		}
 	}
-	//водитель из согласившихся пассажиров выбирает одного с максимальной ценой
+	// driver chooses one passenger with the maximum price
 	private class GetBestPass extends OneShotBehaviour {
 		private ReceiverBehaviour.Handle handle;
 		private Agent agent;
-		private AID sender;
-		private double price = 0;
+		private double price;
 
-		public GetBestPass (Agent agent, AID sender, ReceiverBehaviour.Handle handle) {
+		public GetBestPass (Agent agent, ReceiverBehaviour.Handle handle) {
 			this.agent = agent;
 			this.handle = handle;
-			this.sender = sender;
-			this.price = price;
+			this.price = 0;
 		}
 		@Override
 		public void action() {
@@ -555,7 +536,8 @@ public class TravellerAgent extends Agent {
 						bestPrice = price;
 						possiblePass = msg.getSender();
 						way.clear();
-						for (String s: msg.getContent().split("\n")[1].split(" ")) way.add(s);
+						for (String s: msg.getContent().split("\n")[1].split(" "))
+							way.add(s);
 					}
 				}
 			}
@@ -567,7 +549,6 @@ public class TravellerAgent extends Agent {
 	private class SendAgreeMsgToPass extends OneShotBehaviour {
 		private Agent agent;
 
-
 		public SendAgreeMsgToPass(Agent agent) {
 			this.agent = agent;
 		}
@@ -578,21 +559,18 @@ public class TravellerAgent extends Agent {
 				setCategory(agent,agent.getAID(),"driver");
 				setCategory(agent,possiblePass,"passenger");
 				msg.setContent("passenger");
-
 				msg.addReceiver(possiblePass);
 				msg.setConversationId("AgreeForAgree");
 				agent.send(msg);
 				seats--;
 				percent = percent - 0.1;
-				if (!canBeDriver()) possibleDriversService.setName("false");
-				mutex.lock();
+				if (!canBeDriver())
+					possibleDriversService.setName("false");
 				System.out.println(agent.getAID().getLocalName() + " agrees for agree from " + possiblePass.getLocalName());
-				mutex.unlock();
 			}
 		}
 	}
-	//получение пассажиром согласия или отказа от водителя
-		//окончательное определение ролей в зависимости от выгоды для системы
+	// passenger gets agree from driver
 	private class GetConfirmFromDriver extends OneShotBehaviour {
 		private Agent agent;
 		private ReceiverBehaviour.Handle handle;
@@ -606,9 +584,7 @@ public class TravellerAgent extends Agent {
 				ACLMessage msg = handle.getMessage();
 				if (msg.getConversationId() == "AgreeForAgree") {
 						choosenDriver = msg.getSender();
-						mutex.lock();
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
-						mutex.unlock();
 				}
 			}
 			catch (ReceiverBehaviour.TimedOut timedOut) {}

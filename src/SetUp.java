@@ -2,44 +2,11 @@ import jade.core.Agent;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import jade.wrapper.PlatformController;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleWeightedGraph;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
-import java.util.*;
-import java.util.concurrent.CyclicBarrier;
 
 public class SetUp extends Agent {
 
-    private static SimpleWeightedGraph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
-    public static DijkstraShortestPath graphMatrix;
-    public static List<CyclicBarrier> b = new ArrayList<>();
-
-    private void SetGraph() {
-        graph.addVertex("A");
-        graph.addVertex("B");
-        graph.addVertex("C");
-        graph.addVertex("D");
-        graph.addVertex("E");
-        graph.addVertex("F");
-        graph.addVertex("G");
-        graph.setEdgeWeight(graph.addEdge("A", "B"), 600);
-        graph.setEdgeWeight(graph.addEdge("B", "E"), 600);
-        graph.setEdgeWeight(graph.addEdge("E", "G"), 200);
-        graph.setEdgeWeight(graph.addEdge("G", "D"), 700);
-        graph.setEdgeWeight(graph.addEdge("F", "G"), 200);
-        graph.setEdgeWeight(graph.addEdge("C", "F"), 300);
-        graph.setEdgeWeight(graph.addEdge("A", "C"), 400);
-        graph.setEdgeWeight(graph.addEdge("A", "D"), 300);
-        graph.setEdgeWeight(graph.addEdge("C", "D"), 100);
-        graph.setEdgeWeight(graph.addEdge("F", "E"), 100);
-    }
     protected void setup() {
-
         PlatformController controller = getContainerController();
-
-        SetGraph();
-        graphMatrix = new DijkstraShortestPath<>(graph);
-
         String InputLine = "A F 4\n" +
                 "D E 4\n" +
                 "A E 4\n" +
@@ -51,20 +18,17 @@ public class SetUp extends Agent {
                 "C D 4\n" +
                 "A B 4\n" +
                 "A F 4\n";
-
         String[] AgentsInfo = InputLine.split("\n");
-        for (int i = 1; i <= AgentsInfo.length; i++) {
-            b.add(new CyclicBarrier(i));
-        }
         try {
             AgentController dispetcher = controller.createNewAgent("Dispetcher", Dispetcher.class.getName(), new String[AgentsInfo.length]);
             dispetcher.start();
-
         }
-        catch (ControllerException ex) {
-            System.err.println("Exception while adding dispetcher");
-            ex.printStackTrace();
+        catch (ControllerException ex) {}
+        try
+        {
+            Thread.sleep(1000);
         }
+        catch(InterruptedException ex) {}
         for (int i = 0; i < AgentsInfo.length; i++) {
             try {
                 String[] info = (AgentsInfo[i]).split(" ");
@@ -73,12 +37,8 @@ public class SetUp extends Agent {
                 traveler.start();
 
             }
-            catch (ControllerException ex) {
-                System.err.println("Exception while adding traveller agent Traveller_" + i);
-                ex.printStackTrace();
-            }
+            catch (ControllerException ex) {}
         }
-
-
+        doDelete();
     }
 }

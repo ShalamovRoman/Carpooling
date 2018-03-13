@@ -6,8 +6,12 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.util.*;
+import java.util.concurrent.CyclicBarrier;
 
 
 public class Dispetcher extends Agent {
@@ -15,23 +19,51 @@ public class Dispetcher extends Agent {
     private String[] info = new String[2];
     private boolean allocated = true;
     private String print = "\r\n";
+    private static SimpleWeightedGraph<String, DefaultWeightedEdge> graph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
+    public static DijkstraShortestPath graphMatrix;
+    public static List<CyclicBarrier> b = new ArrayList<>();
+
+    private void SetGraph() {
+        graph.addVertex("A");
+        graph.addVertex("B");
+        graph.addVertex("C");
+        graph.addVertex("D");
+        graph.addVertex("E");
+        graph.addVertex("F");
+        graph.addVertex("G");
+        graph.setEdgeWeight(graph.addEdge("A", "B"), 600);
+        graph.setEdgeWeight(graph.addEdge("B", "E"), 600);
+        graph.setEdgeWeight(graph.addEdge("E", "G"), 200);
+        graph.setEdgeWeight(graph.addEdge("G", "D"), 700);
+        graph.setEdgeWeight(graph.addEdge("F", "G"), 200);
+        graph.setEdgeWeight(graph.addEdge("C", "F"), 300);
+        graph.setEdgeWeight(graph.addEdge("A", "C"), 400);
+        graph.setEdgeWeight(graph.addEdge("A", "D"), 300);
+        graph.setEdgeWeight(graph.addEdge("C", "D"), 100);
+        graph.setEdgeWeight(graph.addEdge("F", "E"), 100);
+    }
 
     private int getInt(AID agent) {
         return Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", ""));
     }
+
     protected void setup() {
         System.out.println("Dispetcher agent is created");
         Object[] args = getArguments();
         info[0] = "not set";
         info[1] = "";
-        for (int i = 0; i < args.length; i++) agentsInfo.put(i, info);
+        SetGraph();
+        graphMatrix = new DijkstraShortestPath<>(graph);
+        for (int i = 1; i <= args.length; i++)
+            b.add(new CyclicBarrier(i));
+        for (int i = 0; i < args.length; i++)
+            agentsInfo.put(i, info);
         DFAgentDescription ad = new DFAgentDescription();
         ad.setName(getAID());
         ServiceDescription sd = new ServiceDescription();
         sd.setType("Tachki");
         sd.setName("TachkiServer");
         ad.addServices(sd);
-
         try {
             DFService.register(this, ad);
         }
@@ -55,24 +87,20 @@ public class Dispetcher extends Agent {
             SequentialBehaviour handleMsg = new SequentialBehaviour(agent);
             final ReceiverBehaviour.Handle handle = ReceiverBehaviour.newHandle();
             handleMsg.addSubBehaviour(new ReceiverBehaviour(agent, handle, 1000));
-            handleMsg.addSubBehaviour(new GetMessages(agent,handle));
+            handleMsg.addSubBehaviour(new GetMessages(handle));
             addBehaviour(handleMsg);
         }
     }
     private class GetMessages extends OneShotBehaviour {
-        private Agent agent;
         private ReceiverBehaviour.Handle handle;
-        public GetMessages(Agent agent, ReceiverBehaviour.Handle handle) {
-            this.agent = agent;
+        public GetMessages(ReceiverBehaviour.Handle handle) {
             this.handle = handle;
         }
         @Override
         public void action() {
             try {
                 ACLMessage msg = handle.getMessage();
-                if (msg.getContent().contains("yo")) {
-                    if (allocated){
-                        allocated = false;
+                if (msg.getContent().contains("cycle")) {
                         for (Map.Entry<Integer, String[]> entry : agentsInfo.entrySet()) {
                             if (entry.getValue()[0].contains("p"))
                                 print += "Traveller_" + entry.getKey()+ " " + entry.getValue()[0] + " (driver is " + "Traveller_" + entry.getValue()[1] + ")\r\n";
@@ -80,6 +108,12 @@ public class Dispetcher extends Agent {
                                 print +="Traveller_" + entry.getKey() + " " + entry.getValue()[0] + "\r\n";
                         }
                         System.out.println(print);
+                        print = "\r\n";
+                }
+                else if (msg.getContent().contains("all")) {
+                    if (allocated){
+                        allocated = false;
+                        System.out.println("Agents allocated");
                     }
                 }
                 else agentsInfo.replace(getInt(msg.getSender()),msg.getContent().split("_"));
