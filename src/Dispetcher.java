@@ -48,14 +48,12 @@ public class Dispetcher extends Agent {
     }
 
     protected void setup() {
-        System.out.println("Dispetcher agent is created");
+        System.out.println("Dobry vecher, ya dispetcher!");
         Object[] args = getArguments();
         info[0] = "not set";
         info[1] = "";
         SetGraph();
         graphMatrix = new DijkstraShortestPath<>(graph);
-        for (int i = 1; i <= args.length; i++)
-            b.add(new CyclicBarrier(i));
         for (int i = 0; i < args.length; i++)
             agentsInfo.put(i, info);
         DFAgentDescription ad = new DFAgentDescription();
@@ -100,21 +98,26 @@ public class Dispetcher extends Agent {
         public void action() {
             try {
                 ACLMessage msg = handle.getMessage();
-                if (msg.getContent().contains("cycle")) {
-                        for (Map.Entry<Integer, String[]> entry : agentsInfo.entrySet()) {
+                if (msg.getContent().contains("all")) {
+                    try
+                    {
+                        Thread.sleep(5800);
+                    }
+                    catch(InterruptedException ex)
+                    {}
+
+                    for (Map.Entry<Integer, String[]> entry : agentsInfo.entrySet()) {
                             if (entry.getValue()[0].contains("p"))
                                 print += "Traveller_" + entry.getKey()+ " " + entry.getValue()[0] + " (driver is " + "Traveller_" + entry.getValue()[1] + ")\r\n";
                             else
                                 print +="Traveller_" + entry.getKey() + " " + entry.getValue()[0] + "\r\n";
                         }
-                        System.out.println(print);
-                        print = "\r\n";
-                }
-                else if (msg.getContent().contains("all")) {
+
                     if (allocated){
                         allocated = false;
-                        System.out.println("Agents allocated");
-                    }
+
+                        System.out.println(print);
+                }
                 }
                 else agentsInfo.replace(getInt(msg.getSender()),msg.getContent().split("_"));
             }

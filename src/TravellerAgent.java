@@ -72,13 +72,6 @@ public class TravellerAgent extends Agent {
 		return res;
 	}
 
-	private void waitOthers(int i) {
-		try {
-			Dispetcher.b.get(i).await();
-		}
-		catch (InterruptedException e) {}
-		catch (BrokenBarrierException e) {}
-	}
 	private void setCategory(Agent agent, AID aid, String type){
 		DFAgentDescription ad = new DFAgentDescription();
 		ad.setName(aid);
@@ -110,10 +103,10 @@ public class TravellerAgent extends Agent {
 	private String getCategory(Agent agent, AID aid) {
 
         String c = search(agent,aid,"not set");
-		if (c == "not found") c = search(agent,aid,"driver");
-		if (c == "not found") c = search(agent,aid,"tmp driver");
-		if (c == "not found") c = search(agent,aid,"passenger");
-		if (c == "not found") c = search(agent,aid,"alone");
+		if (Objects.equals(c, "not found")) c = search(agent,aid,"driver");
+		if (Objects.equals(c, "not found")) c = search(agent,aid,"tmp driver");
+		if (Objects.equals(c, "not found")) c = search(agent,aid,"passenger");
+		if (Objects.equals(c, "not found")) c = search(agent,aid,"alone");
 		return c;
 	}
 	private void collectCategories(Agent agent) {
@@ -205,16 +198,13 @@ public class TravellerAgent extends Agent {
 		}
 		@Override
 		public void action() {
-			if (!aloneFlag && cnt > 0 && getCategory(agent, agent.getAID()) != "driver"){
+			if (!aloneFlag && cnt > 0 && !Objects.equals(getCategory(agent, agent.getAID()), "driver")){
 				setCategory(agent,agent.getAID(),"alone");
 				System.out.println(agent.getLocalName() + " goes alone");
 			}
 			aloneFlag = false;
 			collectCategories(agent);
-			for (Map.Entry<AID, String> entry : categories.entrySet())
-				if (entry.getValue().contains("tmp"))
-					setCategory(agent,entry.getKey(), "not set");
-
+			if (getCategory(agent,agent.getAID()).contains("tmp")) setCategory(agent,agent.getAID(),"not set");
 			if (choosenDriver != null)
 				sendMsgToDispetcher(agent, getCategory(agent,agent.getAID()) + "_" + getInt(choosenDriver));
 			else
@@ -231,34 +221,30 @@ public class TravellerAgent extends Agent {
 			try {
 				DFAgentDescription[] agents = DFService.search(agent, template);
 				for (DFAgentDescription a : agents) {
-					if (!(a.getName().equals(agent.getAID())) && (getCategory(agent,a.getName()) == "not set" || getCategory(agent,a.getName()) == "driver"))
+					if (!(a.getName().equals(agent.getAID())) && (Objects.equals(getCategory(agent, a.getName()), "not set") || Objects.equals(getCategory(agent, a.getName()), "driver")))
 						drivers.add(a.getName());
 				}
 			}
 			catch (FIPAException fe) {}
 
-			waitOthers(drivers.size());
-			int max = getInt(agent.getAID());
-			for (AID dr: drivers) if (getInt(dr)> max) max = getInt(dr);
-			if (getInt(agent.getAID()) == max)sendMsgToDispetcher(agent, "cycle ended");
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 			ParallelBehaviour pb = new ParallelBehaviour();
 
-			if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent) && canBeDriver()) {
+			if (Objects.equals(getCategory(agent, agent.getAID()), "not set") && canBePass(agent) && canBeDriver()) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				pb.addSubBehaviour(new PassengerBehaviour(agent));
 				sb.addSubBehaviour(pb);
 				addBehaviour(sb);
 			}
-			else if (getCategory(agent,agent.getAID()) == "not set" && canBePass(agent)) {
+			else if (Objects.equals(getCategory(agent, agent.getAID()), "not set") && canBePass(agent)) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new PassengerBehaviour(agent));
 				sb.addSubBehaviour(pb);
 				addBehaviour(sb);
 			}
 
-			else if (getCategory(agent,agent.getAID()) == "driver" && canBeDriver()) {
+			else if (Objects.equals(getCategory(agent, agent.getAID()), "driver") && canBeDriver()) {
 				sb.addSubBehaviour(new SendData(agent));
 				pb.addSubBehaviour(new DriverBehaviour(agent));
 				sb.addSubBehaviour(pb);
@@ -266,11 +252,10 @@ public class TravellerAgent extends Agent {
 				addBehaviour(sb);
 			}
 			cnt++;
-			waitOthers(drivers.size());
 			collectCategories(agent);
 			if (!categories.values().contains("not set"))
 				sendMsgToDispetcher(agent, "allocated");
-			if (getCategory(agent,agent.getAID()) != "alone" && getCategory(agent,agent.getAID()) != "passenger" && categories.values().contains("not set"))
+			if (!Objects.equals(getCategory(agent, agent.getAID()), "alone") && !Objects.equals(getCategory(agent, agent.getAID()), "passenger") && categories.values().contains("not set"))
 				addBehaviour(new Restart(agent, 10000));
 		}
 	}
@@ -288,7 +273,7 @@ public class TravellerAgent extends Agent {
 			msg.setContent(from + " " + to + " " + dist);
 			msg.setConversationId("SendData");
 			for (AID dr : drivers) {
-				if (getCategory(agent,dr) != "driver" || getCategory(agent,agent.getAID()) != "driver")
+				if (!Objects.equals(getCategory(agent, dr), "driver") || !Objects.equals(getCategory(agent, agent.getAID()), "driver"))
 					msg.addReceiver(dr);
 			}
 			agent.send(msg);
@@ -377,7 +362,7 @@ public class TravellerAgent extends Agent {
 			for (String w: way2) wayString = wayString + w + " ";
 			msg.setContent(price + " " + utility + "\n" + wayString);
 			agent.send(msg);
-			System.out.println(agent.getLocalName() + " sends propose = " + (int)Math.round(price)  + " to " + sender.getLocalName());
+			//System.out.println(agent.getLocalName() + " sends propose = " + (int)Math.round(price)  + " to " + sender.getLocalName());
 		}
 		// count distance, way and price for all possible passengers
 		public GetPossiblePass( Agent agent, ReceiverBehaviour.Handle handle) {
@@ -409,7 +394,7 @@ public class TravellerAgent extends Agent {
 							way2.addAll(way);
 							CountUtility(agent, content, msg.getSender());
 						}
-						else if (((way.contains(content[0])) && (!way.contains(content[1])) && !(content[0] == to)) || ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) > way.lastIndexOf(content[1])))) {
+						else if (((way.contains(content[0])) && (!way.contains(content[1])) && !(Objects.equals(content[0], to))) || ((way.contains(content[0])) && (way.contains(content[1])) && (way.indexOf(content[0]) > way.lastIndexOf(content[1])))) {
 							int i = way.lastIndexOf(content[0]);
 							String tmp3 = "";
 							for (String w: way) tmp3 = tmp3 + w + " ";
@@ -422,7 +407,7 @@ public class TravellerAgent extends Agent {
 							extra = Dispetcher.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + Dispetcher.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						}
-						else if (!(way.contains(content[0])) && (way.contains(content[1])) && !(content[1] == from)) {
+						else if (!(way.contains(content[0])) && (way.contains(content[1])) && !(Objects.equals(content[1], from))) {
 							int i = way.indexOf(content[1]);
 							way2.add(way.get(0));
 							way2.add(content[0]);
@@ -469,7 +454,7 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			try {
 				ACLMessage msg = handle.getMessage();
-				if (msg.getConversationId() == "Propose") {
+				if (Objects.equals(msg.getConversationId(), "Propose")) {
 					double util = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[1]);
 					way2 = Arrays.asList(msg.getContent().split("\n")[1].split(" "));
 					int i = way2.indexOf(from);
@@ -530,7 +515,7 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			try {
 				ACLMessage msg = handle.getMessage();
-				if (msg.getConversationId() == "AgreeForPropose") {
+				if (Objects.equals(msg.getConversationId(), "AgreeForPropose")) {
 					price = Double.parseDouble(msg.getContent().split("\n")[0]);
 					if (price >= bestPrice && !(getCategory(agent,msg.getSender()).contains("driver"))) {
 						bestPrice = price;
@@ -582,7 +567,7 @@ public class TravellerAgent extends Agent {
 		public void action() {
 			try {
 				ACLMessage msg = handle.getMessage();
-				if (msg.getConversationId() == "AgreeForAgree") {
+				if (Objects.equals(msg.getConversationId(), "AgreeForAgree")) {
 						choosenDriver = msg.getSender();
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
 				}
