@@ -40,7 +40,7 @@ public class TravellerAgent extends Agent {
 		return Integer.parseInt(agent.getLocalName().replaceAll("[\\D]", ""));
 	}
 
-	private double getDist2(List<String> arr){
+	private double getDist(List<String> arr){
 		double sum = 0;
 		for (int i = 0; i < arr.size() - 1; i++)
 		    sum += Dispetcher.graphMatrix.getPath(arr.get(i), arr.get(i + 1)).getWeight();
@@ -362,7 +362,7 @@ public class TravellerAgent extends Agent {
 
 		// count system utility of driving with concrete passenger
 		private void  CountUtility (Agent agent, String[] content, AID sender) {
-			utility = getDist2(way) + Double.parseDouble(content[2]) - dist2;
+			utility = getDist(way) + Double.parseDouble(content[2]) - dist2;
 			// decrease percent if during the last circle agent couldn't find any passengers
 			price =  percent * (Double.parseDouble(content[2]) + extra - utility);
 			ACLMessage msg = new ACLMessage(ACLMessage.CFP);
@@ -396,7 +396,7 @@ public class TravellerAgent extends Agent {
 						way2.add(content[0]);
 						way2.add(content[1]);
 						way2.add(to);
-						dist2 = getDist2(way2);
+						dist2 = getDist(way2);
 						extra = Dispetcher.graphMatrix.getPath(from, content[0]).getWeight() + Dispetcher.graphMatrix.getPath(content[1], to).getWeight();
 						CountUtility(agent, content, msg.getSender());
 					} else {
@@ -413,7 +413,7 @@ public class TravellerAgent extends Agent {
 							way2.addAll(way.subList(i + 1, way.size()));
 							way2.add(content[1]);
 							way2.add(way.get(way.size() - 1));
-							dist2 = getDist2(way2);
+							dist2 = getDist(way2);
 							extra = Dispetcher.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + Dispetcher.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						}
@@ -424,7 +424,7 @@ public class TravellerAgent extends Agent {
 							way2.addAll(way.subList(1, i + 1));
 							way2.add(content[1]);
 							way2.addAll(way.subList(i + 1, way.size()));
-							dist2 = getDist2(way2);
+							dist2 = getDist(way2);
 							extra = Dispetcher.graphMatrix.getPath(way.get(0), content[0]).getWeight() + Dispetcher.graphMatrix.getPath(content[0], way.get(1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						} else {
@@ -433,7 +433,7 @@ public class TravellerAgent extends Agent {
 							way2.addAll(way.subList(1, way.size() - 1));
 							way2.add(content[1]);
 							way2.add(way.get(way.size() - 1));
-							dist2 = getDist2(way2);
+							dist2 = getDist(way2);
 							extra = Dispetcher.graphMatrix.getPath(way.get(0), content[0]).getWeight() + Dispetcher.graphMatrix.getPath(content[0], way.get(1)).getWeight() + Dispetcher.graphMatrix.getPath(way.get(way.size() - 2), content[1]).getWeight() + Dispetcher.graphMatrix.getPath(content[1], way.get(way.size() - 1)).getWeight();
 							CountUtility(agent, content, msg.getSender());
 						}
@@ -473,7 +473,7 @@ public class TravellerAgent extends Agent {
 					way2 = Arrays.asList(msg.getContent().split("\n")[1].split(" "));
 					int i = way2.indexOf(from);
 					int j = way2.subList(i,way2.size()).indexOf(to);
-					double tmpdist = getDist2(way2.subList(i, j + 1));
+					double tmpdist = getDist(way2.subList(i, j + 1));
 					driverPrice = Double.parseDouble(msg.getContent().split("\n")[0].split(" ")[0]);
 					if (util >= 0)
 						aloneFlag = true;

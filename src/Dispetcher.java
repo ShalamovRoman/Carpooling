@@ -66,7 +66,9 @@ public class Dispetcher extends Agent {
             DFService.register(this, ad);
         }
 
-        catch (FIPAException fe) {}
+        catch (FIPAException fe) {
+            fe.printStackTrace();
+        }
         addBehaviour(new WakerBehaviour(this, 10000) {
             @Override
             protected void onWake() {
@@ -99,29 +101,33 @@ public class Dispetcher extends Agent {
             try {
                 ACLMessage msg = handle.getMessage();
                 if (msg.getContent().contains("all")) {
-                    try
-                    {
+                    try {
                         Thread.sleep(5800);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
                     }
-                    catch(InterruptedException ex)
-                    {}
 
                     for (Map.Entry<Integer, String[]> entry : agentsInfo.entrySet()) {
-                            if (entry.getValue()[0].contains("p"))
-                                print += "Traveller_" + entry.getKey()+ " " + entry.getValue()[0] + " (driver is " + "Traveller_" + entry.getValue()[1] + ")\r\n";
-                            else
-                                print +="Traveller_" + entry.getKey() + " " + entry.getValue()[0] + "\r\n";
+                        if (entry.getValue()[0].contains("p"))
+                            print += "Traveller_" + entry.getKey() + " " + entry.getValue()[0] + " (driver is " + "Traveller_" + entry.getValue()[1] + ")\r\n";
+                        else
+                            print += "Traveller_" + entry.getKey() + " " + entry.getValue()[0] + "\r\n";
+                    }
+
+                        if (allocated) {
+                            allocated = false;
+                            System.out.println(print);
+                            System.out.println("Agents allocated");
                         }
 
-                    if (allocated){
-                        allocated = false;
 
-                        System.out.println(print);
-                }
-                }
+                    }
+
                 else agentsInfo.replace(getInt(msg.getSender()),msg.getContent().split("_"));
             }
-            catch (Exception e) {}
+
+            catch (Exception ignored) {
+            }
         }
     }
 }

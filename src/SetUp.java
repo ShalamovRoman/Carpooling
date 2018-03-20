@@ -23,12 +23,16 @@ public class SetUp extends Agent {
             AgentController dispetcher = controller.createNewAgent("Dispetcher", Dispetcher.class.getName(), new String[AgentsInfo.length]);
             dispetcher.start();
         }
-        catch (ControllerException ex) {}
+        catch (ControllerException ex) {
+            ex.printStackTrace();
+        }
         try
         {
             Thread.sleep(1000);
         }
-        catch(InterruptedException ex) {}
+        catch(InterruptedException ex) {
+            ex.printStackTrace();
+        }
         for (int i = 0; i < AgentsInfo.length; i++) {
             try {
                 String[] info = (AgentsInfo[i]).split(" ");
@@ -37,7 +41,9 @@ public class SetUp extends Agent {
                 traveler.start();
 
             }
-            catch (ControllerException ex) {}
+            catch (ControllerException ex) {
+                ex.printStackTrace();
+            }
         }
         doDelete();
     }
