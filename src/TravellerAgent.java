@@ -9,11 +9,7 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
 import java.lang.*;
-import java.util.HashSet;
 import java.util.*;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class TravellerAgent extends Agent {
 
@@ -68,7 +64,9 @@ public class TravellerAgent extends Agent {
                 if (el.getName() != agent.getAID()) res = true;
             }
 		}
-		catch (FIPAException fe) {}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 		return res;
 	}
 
@@ -81,7 +79,9 @@ public class TravellerAgent extends Agent {
 		ad.addServices(categoryService);
 		try {
 			DFService.modify(agent,ad);
-		} catch (FIPAException e) {}
+		} catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 	}
 	private String search (Agent agent, AID aid, String type){
 		String c = "not found";
@@ -96,7 +96,9 @@ public class TravellerAgent extends Agent {
                 if (el.getName().equals(aid)) c = type;
             }
 		}
-		catch (FIPAException fe) {}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 		return c;
 
 	}
@@ -121,7 +123,9 @@ public class TravellerAgent extends Agent {
 				else categories.put(a.getName(),getCategory(agent,a.getName()));
 			}
 		}
-		catch (FIPAException fe) {}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 
 	}
 	private void sendMsgToDispetcher(Agent agent, String info) {
@@ -157,7 +161,9 @@ public class TravellerAgent extends Agent {
 			DFService.register(this, agentDescription);
 		}
 
-		catch (FIPAException fe) {}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 		DFAgentDescription template = new DFAgentDescription();
 		ServiceDescription sd = new ServiceDescription();
 		sd.setType("Tachki");
@@ -168,7 +174,9 @@ public class TravellerAgent extends Agent {
 				if (a.getName().getLocalName().contains("Di")) dispetcher = a.getName();
 			}
 		}
-		catch (FIPAException fe) {}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 
 		addBehaviour(new WakerBehaviour(this, 10000) {
 			@Override
@@ -180,7 +188,7 @@ public class TravellerAgent extends Agent {
 
 	private class LifeCycle extends OneShotBehaviour {
 		private Agent agent;
-		public LifeCycle(Agent agent) {
+		LifeCycle(Agent agent) {
 			this.agent = agent;
 		}
 		@Override
@@ -189,10 +197,10 @@ public class TravellerAgent extends Agent {
 		}
 	}
 	// starts agent behaviour depending on all agents categories
-	public class StartCycle extends OneShotBehaviour {
+	class StartCycle extends OneShotBehaviour {
 		private Agent agent;
 
-		public StartCycle(Agent agent) {
+		StartCycle(Agent agent) {
 			super(agent);
 			this.agent = agent;
 		}
@@ -225,7 +233,9 @@ public class TravellerAgent extends Agent {
 						drivers.add(a.getName());
 				}
 			}
-			catch (FIPAException fe) {}
+			catch (FIPAException fe) {
+				fe.printStackTrace();
+			}
 
 			SequentialBehaviour sb = new SequentialBehaviour(agent);
 			ParallelBehaviour pb = new ParallelBehaviour();
@@ -263,7 +273,7 @@ public class TravellerAgent extends Agent {
 	private class SendData extends OneShotBehaviour{
 		private Agent agent;
 
-		public SendData( Agent agent) {
+		SendData(Agent agent) {
 			this.agent = agent;
 		}
 		@Override
@@ -284,7 +294,7 @@ public class TravellerAgent extends Agent {
 
 		private Agent agent;
 
-		public DriverBehaviour(Agent agent) {
+		DriverBehaviour(Agent agent) {
 			this.agent = agent;
 		}
 		@Override
@@ -317,7 +327,7 @@ public class TravellerAgent extends Agent {
 
 		private Agent agent;
 
-		public PassengerBehaviour(Agent agent) {
+		PassengerBehaviour(Agent agent) {
 			this.agent = agent;
 		}
 
@@ -365,7 +375,7 @@ public class TravellerAgent extends Agent {
 			//System.out.println(agent.getLocalName() + " sends propose = " + (int)Math.round(price)  + " to " + sender.getLocalName());
 		}
 		// count distance, way and price for all possible passengers
-		public GetPossiblePass( Agent agent, ReceiverBehaviour.Handle handle) {
+		GetPossiblePass(Agent agent, ReceiverBehaviour.Handle handle) {
 
 			this.agent = agent;
 			this.handle = handle;
@@ -430,8 +440,12 @@ public class TravellerAgent extends Agent {
 					}
 				}
 			}
-			catch (ReceiverBehaviour.TimedOut timedOut) {}
-			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
+			catch (ReceiverBehaviour.TimedOut ignored) {
+
+			}
+			catch (ReceiverBehaviour.NotYetReady notYetReady) {
+				System.out.println(agent.getLocalName() + ": reply not yet ready");
+			}
 		}
 	}
 
@@ -443,7 +457,7 @@ public class TravellerAgent extends Agent {
 		private List<String> way2;
 		private double dist2;
 
-		public GetPossibleDriver(Agent agent, ReceiverBehaviour.Handle handle) {
+		GetPossibleDriver(Agent agent, ReceiverBehaviour.Handle handle) {
 			this.agent = agent;
 			this.handle = handle;
 			this.price =  0;
@@ -472,15 +486,19 @@ public class TravellerAgent extends Agent {
 					}
 				}
 			}
-			catch (ReceiverBehaviour.TimedOut timedOut) {}
-			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
+			catch (ReceiverBehaviour.TimedOut ignored) {
+
+			}
+			catch (ReceiverBehaviour.NotYetReady notYetReady) {
+				System.out.println(agent.getLocalName() + ": reply not yet ready");
+			}
 		}
 	}
 	// sending message to driver with the best offer
 	private class SendMsgToDriver extends OneShotBehaviour {
 		private Agent agent;
 
-		public SendMsgToDriver(Agent agent) {
+		SendMsgToDriver(Agent agent) {
 
 			this.agent = agent;
 		}
@@ -506,7 +524,7 @@ public class TravellerAgent extends Agent {
 		private Agent agent;
 		private double price;
 
-		public GetBestPass (Agent agent, ReceiverBehaviour.Handle handle) {
+		GetBestPass(Agent agent, ReceiverBehaviour.Handle handle) {
 			this.agent = agent;
 			this.handle = handle;
 			this.price = 0;
@@ -526,15 +544,18 @@ public class TravellerAgent extends Agent {
 					}
 				}
 			}
-			catch (ReceiverBehaviour.TimedOut timedOut) {}
-			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
+			catch (ReceiverBehaviour.TimedOut ignored) {
+			}
+			catch (ReceiverBehaviour.NotYetReady notYetReady) {
+				System.out.println(myAgent.getLocalName() + ": reply not yet ready");
+			}
 		}
 	}
 
 	private class SendAgreeMsgToPass extends OneShotBehaviour {
 		private Agent agent;
 
-		public SendAgreeMsgToPass(Agent agent) {
+		SendAgreeMsgToPass(Agent agent) {
 			this.agent = agent;
 		}
 		@Override
@@ -560,7 +581,7 @@ public class TravellerAgent extends Agent {
 		private Agent agent;
 		private ReceiverBehaviour.Handle handle;
 
-		public GetConfirmFromDriver(Agent agent, ReceiverBehaviour.Handle handle) {
+		GetConfirmFromDriver(Agent agent, ReceiverBehaviour.Handle handle) {
 			this.agent = agent;
 			this.handle = handle;
 		}
@@ -572,13 +593,17 @@ public class TravellerAgent extends Agent {
 						System.out.println(msg.getSender().getLocalName() + " is driver to " + agent.getLocalName());
 				}
 			}
-			catch (ReceiverBehaviour.TimedOut timedOut) {}
-			catch (ReceiverBehaviour.NotYetReady notYetReady) {}
+			catch (ReceiverBehaviour.TimedOut ignored) {
+
+			}
+			catch (ReceiverBehaviour.NotYetReady notYetReady) {
+				System.out.println(agent.getLocalName() + ": reply not yet ready");
+			}
 		}
 	}
 
 	private class Restart extends WakerBehaviour {
-		public Restart(Agent a, long timeout) {
+		Restart(Agent a, long timeout) {
 
 			super(a, timeout);
 		}
